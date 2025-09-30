@@ -1,27 +1,76 @@
 import "./global.css";
+import React from 'react';
 import { StatusBar } from "expo-status-bar";
-import { Text, View, TouchableOpacity, Alert } from "react-native";
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { AuthProvider } from './contexts/AuthContext';
+import { colors } from './theme/colors';
+import { TabIcon } from './components/TabIcon';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Importar pantallas
+import HomeScreen from './screens/HomeScreen';
+import AccountScreen from './screens/AccountScreen';
+
+const Tab = createBottomTabNavigator();
+
+function TabNavigator() {
+  const insets = useSafeAreaInsets();
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused }) => {
+          let iconName;
+
+          if (route.name === 'Home') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Account') {
+            iconName = focused ? 'person' : 'person-outline';
+          }
+
+          return <TabIcon name={iconName} focused={focused} />;
+        },
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarStyle: {
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+          paddingTop: 8,
+          paddingBottom: 8 + insets.bottom,
+          height: 60 + insets.bottom,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+          marginBottom: 4,
+        },
+      })}
+    >
+      <Tab.Screen 
+        name="Home" 
+        component={HomeScreen}
+        options={{ tabBarLabel: 'Inicio' }}
+      />
+      <Tab.Screen 
+        name="Account" 
+        component={AccountScreen}
+        options={{ tabBarLabel: 'Mi Cuenta' }}
+      />
+    </Tab.Navigator>
+  );
+}
 
 export default function App() {
-  const handleButtonPress = () => {
-    Alert.alert("Alerta", "Hola, botón funcionando");
-  };
-
   return (
-    <View className="flex-1 bg-white items-center justify-center">
-      <Text className="text-2xl font-bold text-blue-600 mb-4">
-        ¡NativeWind Funcionando!
-      </Text>
-      <Text className="text-gray-600 text-center px-4">
-        React Native + Expo + NativeWind + TypeScript
-      </Text>
-      <TouchableOpacity 
-        className="mt-6 bg-blue-500 px-6 py-3 rounded-lg shadow-lg"
-        onPress={handleButtonPress}
-      >
-        <Text className="text-white font-semibold">Botón de Ejemplo</Text>
-      </TouchableOpacity>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <NavigationContainer>
+          <TabNavigator />
+          <StatusBar style="light" backgroundColor={colors.background} />
+        </NavigationContainer>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

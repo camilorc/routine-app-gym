@@ -1,8 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  // Incluir rutas a todos los archivos con clases de NativeWind
   content: [
-    "./App.tsx", 
+    "./App.{js,jsx,ts,tsx}", 
     "./components/**/*.{js,jsx,ts,tsx}",
     "./screens/**/*.{js,jsx,ts,tsx}",
     "./contexts/**/*.{js,jsx,ts,tsx}"
