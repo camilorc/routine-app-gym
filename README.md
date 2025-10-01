@@ -1,159 +1,167 @@
-# 🚀 React Native + Expo Template
+# 🚀 RN Expo Supabase Template
 
-## ⚡ Quick Start Template
+## ⚡ Production-Ready Starter Template
 
-Este es un template base para aplicaciones React Native + Expo con autenticación completa y arquitectura modular.
+A modern, scalable React Native + Expo + Supabase starter template with complete authentication system, modular architecture, and best practices built-in.
 
-Una base sólida desarrollada con React Native + Expo, autenticación Supabase y arquitectura escalable.
+### 🎯 Perfect For:
+- 📱 Mobile apps with user authentication
+- 🏢 Business applications
+- 🎮 Social platforms  
+- 📊 Dashboard apps
+- 🛍️ E-commerce apps
 
-## � Características del Template
+## 🏗️ What's Included
 
-- ✅ **Sistema de autenticación modular** - Login/Register separados y reutilizables
-- ✅ **Componentes UI reutilizables** - AuthInput, AuthButton, AuthHeader, etc.
-- ✅ **Custom Hooks** - useAuthForm, useAuthValidation
-- ✅ **Navegación configurada** - Bottom tabs con SafeArea
-- ✅ **Tema oscuro implementado** - Paleta verde premium
-- ✅ **Validaciones completas** - Email, password, confirmación
-- ✅ **Arquitectura escalable** - Separación por responsabilidades
-- ✅ **TypeScript Ready** - Estructura preparada para TS
+### 🔐 **Complete Auth System**
+- ✅ Login/Register screens
+- ✅ Form validation & error handling
+- ✅ Supabase integration
+- ✅ Session persistence
+- ✅ Modular components
 
-## 🚀 Tecnologías
+### 🧩 **Modular Architecture** 
+- ✅ Reusable UI components
+- ✅ Custom hooks (useAuthForm, useAuthValidation)
+- ✅ Organized folder structure
+- ✅ Separation of concerns
+- ✅ Easy to extend
 
-- **React Native** `0.81.4` - Framework de desarrollo móvil multiplataforma
-- **Expo** `~54.0.10` - Plataforma de desarrollo y despliegue
-- **NativeWind** `^4.0.0` - Tailwind CSS para React Native
-- **Supabase** `^2.58.0` - Backend como servicio (BaaS)
-- **React Navigation** `^7.1.17` - Navegación nativa
-- **TypeScript** `~5.9.2` - Superset de JavaScript con tipado
+### 🎨 **Modern UI/UX**
+- ✅ NativeWind v4 (TailwindCSS for RN)
+- ✅ Dark theme implementation
+- ✅ Consistent design system
+- ✅ Professional green palette
+- ✅ SafeArea compatible
 
-## 🎨 Paleta de Colores
+### 🧭 **Navigation Ready**
+- ✅ React Navigation v6
+- ✅ Bottom tabs configured
+- ✅ Auth flow integration
+- ✅ TypeScript support
 
-```javascript
-const colors = {
-  background: "#0B0F0E",    // Fondo principal negro/verde oscuro
-  surface: "#1A1F1D",       // Fondo secundario
-  textPrimary: "#F5F5F5",   // Texto principal
-  textSecondary: "#A3A3A3", // Texto secundario
-  accent: "#06D6A0",        // Verde brillante (acento)
-  border: "#2E2E2E",        // Bordes
-};
-```
+## 📱 Tech Stack
 
-## 📱 Pantallas
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **React Native** | 0.81.4 | Mobile framework |
+| **Expo** | ~54.0.10 | Development platform |
+| **NativeWind** | ^4.0.0 | Styling system |
+| **Supabase** | ^2.58.0 | Backend & Auth |
+| **React Navigation** | ^7.1.17 | Navigation |
+| **TypeScript** | ~5.9.2 | Type safety |
 
-### 🏠 Inicio
-- Mensaje de bienvenida personalizado
-- Muestra nombre del usuario si está autenticado
-- Mensaje genérico para usuarios no autenticados
+## 🚀 Quick Start
 
-### 👤 Mi Cuenta
-- **No autenticado**: Formulario de login (email + contraseña)
-- **Autenticado**: Perfil del usuario con información y botón de logout
-
-## ⚙️ Instalación
-
-### Prerrequisitos
-- Node.js (v16 o superior)
-- npm o yarn
-- Expo CLI: `npm install -g expo-cli`
-- Expo Go app en tu dispositivo móvil
-
-### 1. Clonar el repositorio
+### 1. Use This Template
 ```bash
-git clone https://github.com/camilorc/routine-app-gym.git
-cd routine-app-gym
+# On GitHub: Click "Use this template" → "Create a new repository"
+# Or clone directly:
+git clone https://github.com/camilorc/rn-expo-supabase-template.git my-new-app
+cd my-new-app
 ```
 
-### 2. Instalar dependencias
+### 2. Install Dependencies
 ```bash
 npm install
 ```
 
-### 3. Configurar Supabase (Opcional)
+### 3. Setup Environment
 ```bash
-npm run setup
-```
-Sigue las instrucciones para ingresar tus credenciales de Supabase.
+# Copy environment template
+cp .env.example .env
 
-### 4. Ejecutar la aplicación
+# Edit with your Supabase credentials
+EXPO_PUBLIC_SUPABASE_URL=your-supabase-url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### 4. Run Your App
 ```bash
-npm start
+npx expo start
 ```
 
-Escanea el código QR con Expo Go o presiona:
-- `a` para Android
-- `i` para iOS
-- `w` para web
-
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
 ```
-routine-app-gym/
-├── App.tsx                 # Punto de entrada con navegación
-├── components/
-│   └── TabIcon.js         # Iconos vectoriales para tabs
-├── contexts/
-│   └── AuthContext.js     # Contexto global de autenticación
-├── screens/
-│   ├── HomeScreen.js      # Pantalla de inicio
-│   └── AccountScreen.js   # Pantalla de cuenta/login
-├── theme/
-│   └── colors.js         # Paleta de colores centralizada
-├── lib/
-│   └── supabaseClient.js # Configuración de Supabase
-└── assets/               # Recursos estáticos (íconos, imágenes)
+├── 🔐 auth/                   # Authentication module
+│   ├── AuthContext.js         # Global auth state
+│   ├── supabaseClient.js      # Configured client
+│   └── index.js               # Module exports
+│
+├── 📱 screens/
+│   ├── auth/                  # Auth screens
+│   │   ├── AuthContainer.js   # Main auth coordinator
+│   │   ├── LoginScreen.js     # Login interface
+│   │   ├── RegisterScreen.js  # Registration form
+│   │   └── ProfileScreen.js   # User profile
+│   └── HomeScreen.js          # Main app screen
+│
+├── 🧩 components/
+│   └── auth/                  # Reusable auth UI
+│       ├── AuthInput.js       # Consistent input field
+│       ├── AuthButton.js      # Action buttons
+│       ├── AuthHeader.js      # Screen headers
+│       ├── AuthToggle.js      # Login/Register toggle
+│       └── AuthLayout.js      # Base layout
+│
+├── 🪝 hooks/                  # Custom hooks
+│   ├── useAuthForm.js         # Form state management
+│   └── useAuthValidation.js   # Input validation
+│
+└── ⚙️ config/                 # Configuration files
+    ├── metro.config.js
+    ├── tailwind.config.js
+    └── babel.config.js
 ```
 
-## 🔐 Configuración de Supabase
+## 🎨 Customization
 
-1. Crea una cuenta en [Supabase](https://supabase.com)
-2. Crea un nuevo proyecto
-3. Ve a **Settings > API**
-4. Ejecuta `npm run setup` y proporciona:
-   - Project URL
-   - Anon key
-
-## 🎯 Scripts Disponibles
-
-```bash
-npm start          # Inicia el servidor de desarrollo
-npm run android    # Ejecuta en emulador Android
-npm run ios        # Ejecuta en simulador iOS
-npm run web        # Ejecuta en navegador web
-npm run setup      # Configura credenciales de Supabase
+### Change Theme Colors
+Edit `tailwind.config.js`:
+```javascript
+theme: {
+  extend: {
+    colors: {
+      primary: '#YOUR_COLOR',      // Main accent
+      background: '#YOUR_BG',      // Background
+      surface: '#YOUR_SURFACE',    // Cards/surfaces
+    }
+  }
+}
 ```
 
-## 🛡️ Seguridad
+### Add New Screens
+1. Create in `screens/`
+2. Register in navigation
+3. Add to bottom tabs if needed
 
-- ✅ Credenciales de Supabase en `.gitignore`
-- ✅ Validación de formularios
-- ✅ Manejo seguro de estados de autenticación
-- ✅ Contexto React para estado global
+### Extend Auth System
+- Add social login (Google, Apple, etc.)
+- Implement password reset
+- Add profile picture upload
+- Create user roles system
 
-## 🤝 Contribuir
+## 📚 Documentation
 
-1. Fork el proyecto
-2. Crea una rama para tu feature: `git checkout -b feature/nueva-caracteristica`
-3. Commit tus cambios: `git commit -m 'Add: nueva característica'`
-4. Push a la rama: `git push origin feature/nueva-caracteristica`
-5. Abre un Pull Request
+- 📖 [Complete Architecture Guide](./ARCHITECTURE.md)
+- 🔐 [Authentication Module Docs](./auth/README.md)
+- 🛠️ [Template Setup Guide](./TEMPLATE_SETUP.md)
 
-## 📄 Licencia
+## 🤝 Contributing
 
-Este proyecto está bajo la licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+1. Fork this template
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch  
+5. Open a Pull Request
 
-## 🔗 Links Útiles
+## 📄 License
 
-- [React Native Documentation](https://reactnative.dev/docs/getting-started)
-- [Expo Documentation](https://docs.expo.dev/)
-- [NativeWind Documentation](https://www.nativewind.dev/)
-- [Supabase Documentation](https://supabase.com/docs)
-- [React Navigation](https://reactnavigation.org/)
-
-## 👨‍💻 Autor
-
-**Camilo RC** - [@camilorc](https://github.com/camilorc)
+MIT License - feel free to use for personal and commercial projects.
 
 ---
 
-⭐ ¡Si te gusta el proyecto, no olvides darle una estrella!
+**🎉 Start building amazing React Native apps in minutes, not hours!**
+
+[![Use this template](https://img.shields.io/badge/Use%20this%20template-2ea44f?style=for-the-badge)](https://github.com/camilorc/rn-expo-supabase-template/generate)
