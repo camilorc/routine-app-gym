@@ -1,15 +1,21 @@
-# 🏋️‍♀️ Routine App Gym
+# 🚀 React Native + Expo Template
 
-Una aplicación móvil moderna para gestión de rutinas de gimnasio desarrollada con React Native + Expo, autenticación con Supabase y diseño minimalista.
+## ⚡ Quick Start Template
 
-## 🌟 Características
+Este es un template base para aplicaciones React Native + Expo con autenticación completa y arquitectura modular.
 
-- **🧭 Navegación Bottom Tabs** - Interfaz intuitiva con pestañas inferiores
-- **🔐 Autenticación Segura** - Login/logout con Supabase Backend
-- **🎨 Diseño Minimalista** - Paleta verde oscuro premium y elegante
-- **📱 SafeArea Compatible** - Optimizada para iPhone (incluye home indicator)
-- **⚡ NativeWind v4** - Estilos con Tailwind CSS para React Native
-- **🔧 TypeScript** - Tipado estático para mayor confiabilidad
+Una base sólida desarrollada con React Native + Expo, autenticación Supabase y arquitectura escalable.
+
+## � Características del Template
+
+- ✅ **Sistema de autenticación modular** - Login/Register separados y reutilizables
+- ✅ **Componentes UI reutilizables** - AuthInput, AuthButton, AuthHeader, etc.
+- ✅ **Custom Hooks** - useAuthForm, useAuthValidation
+- ✅ **Navegación configurada** - Bottom tabs con SafeArea
+- ✅ **Tema oscuro implementado** - Paleta verde premium
+- ✅ **Validaciones completas** - Email, password, confirmación
+- ✅ **Arquitectura escalable** - Separación por responsabilidades
+- ✅ **TypeScript Ready** - Estructura preparada para TS
 
 ## 🚀 Tecnologías
 
