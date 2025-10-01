@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from './supabaseClient';
 
 // Crear el contexto de autenticación
 const AuthContext = createContext({
@@ -7,6 +7,7 @@ const AuthContext = createContext({
   session: null,
   loading: true,
   signIn: () => {},
+  signUp: () => {},
   signOut: () => {},
 });
 
@@ -80,6 +81,33 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Función para registrarse
+  const signUp = async (email, password, fullName) => {
+    if (!supabase) {
+      return { 
+        data: null, 
+        error: { message: 'Supabase not configured. Please check your configuration.' } 
+      };
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            display_name: fullName
+          }
+        }
+      });
+
+      return { data, error };
+    } catch (error) {
+      return { data: null, error };
+    }
+  };
+
   // Función para cerrar sesión
   const signOut = async () => {
     if (!supabase) {
@@ -99,6 +127,7 @@ export const AuthProvider = ({ children }) => {
     session,
     loading,
     signIn,
+    signUp,
     signOut,
   };
 

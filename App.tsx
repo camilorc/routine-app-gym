@@ -3,14 +3,14 @@ import React from 'react';
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider } from './auth/AuthContext';
 import { colors } from './theme/colors';
 import { TabIcon } from './components/TabIcon';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Importar pantallas
 import HomeScreen from './screens/HomeScreen';
-import AccountScreen from './screens/AccountScreen';
+import { AuthContainer } from './screens/auth';
 
 const Tab = createBottomTabNavigator();
 
@@ -55,7 +55,7 @@ function TabNavigator() {
       />
       <Tab.Screen 
         name="Account" 
-        component={AccountScreen}
+        component={AuthContainer}
         options={{ tabBarLabel: 'Mi Cuenta' }}
       />
     </Tab.Navigator>
