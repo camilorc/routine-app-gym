@@ -1,8 +1,10 @@
 import "./global.css";
 import React from 'react';
+import { View } from 'react-native';
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider } from './auth/AuthContext';
 import { colors } from './theme/colors';
 import { TabIcon } from './components/TabIcon';
@@ -11,6 +13,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 // Importar pantallas
 import HomeScreen from './screens/HomeScreen';
 import { AuthContainer } from './screens/auth';
+import CreateRoutineScreen from './screens/CreateRoutineScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -25,6 +28,15 @@ function TabNavigator() {
 
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Create') {
+            // Botón especial para crear rutina
+            return (
+              <View className={`w-8 h-8 rounded-md items-center justify-center ${
+                focused ? 'bg-[#06D6A0]' : 'bg-[#06D6A0]'
+              }`}>
+                <Ionicons name="add" size={16} color="#0B0F0E" />
+              </View>
+            );
           } else if (route.name === 'Account') {
             iconName = focused ? 'person' : 'person-outline';
           }
@@ -52,6 +64,13 @@ function TabNavigator() {
         name="Home" 
         component={HomeScreen}
         options={{ tabBarLabel: 'Inicio' }}
+      />
+      <Tab.Screen 
+        name="Create" 
+        component={CreateRoutineScreen}
+        options={{ 
+          tabBarLabel: 'Crear'
+        }}
       />
       <Tab.Screen 
         name="Account" 
