@@ -337,15 +337,21 @@ Antes de enviar a Google Play:
 
 ## 📝 Notas de esta Compilación
 
-**Fecha:** [Se completará durante el proceso]
+**Fecha:** 4 de Octubre, 2025
 **Versión:** 1.0.0
 **Build Number:** 1
-**Package Name:** [Se definirá en configuración]
+**Package Name:** com.camilorc.strongo
+**Project ID:** 01046718-c033-4e03-9232-f280bdc43335
+**Expo Project:** https://expo.dev/accounts/camilorc/projects/strongo-app
 
 **Status del Build:**
-- [ ] Configuración completada
-- [ ] APK preview generado y probado
+- [x] Configuración completada
+- [x] APK preview generado (Build ID: 355c3f21-8d42-4ddd-91ed-5fc1911861ef)
+- [ ] APK probado en dispositivo
 - [ ] AAB producción generado
 - [ ] Subido a Google Play Console
 - [ ] Enviado para revisión
 - [ ] Aprobado y publicado
+
+**Links de Builds:**
+- APK Preview: https://expo.dev/accounts/camilorc/projects/strongo-app/builds/355c3f21-8d42-4ddd-91ed-5fc1911861ef

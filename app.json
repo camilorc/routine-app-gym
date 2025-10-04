@@ -35,8 +35,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "your-project-id-will-be-here"
+        "projectId": "01046718-c033-4e03-9232-f280bdc43335"
       }
-    }
+    },
+    "owner": "camilorc"
   }
 }
