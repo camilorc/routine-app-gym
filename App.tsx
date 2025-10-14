@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider } from './auth/AuthContext';
 import { colors } from './theme/colors';
@@ -14,8 +15,10 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import HomeScreen from './screens/HomeScreen';
 import { AuthContainer } from './screens/auth';
 import CreateRoutineScreen from './screens/CreateRoutineScreen';
+import AddExerciseScreen from './screens/AddExerciseScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 function TabNavigator() {
   const insets = useSafeAreaInsets();
@@ -81,12 +84,27 @@ function TabNavigator() {
   );
 }
 
+function RootStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        presentation: 'card',
+        cardStyle: { backgroundColor: colors.background },
+      }}
+    >
+      <Stack.Screen name="Tabs" component={TabNavigator} />
+      <Stack.Screen name="AddExercise" component={AddExerciseScreen} />
+    </Stack.Navigator>
+  );
+}
+
 export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
         <NavigationContainer>
-          <TabNavigator />
+          <RootStack />
           <StatusBar style="light" backgroundColor={colors.background} />
         </NavigationContainer>
       </AuthProvider>
