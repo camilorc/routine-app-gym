@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../theme/colors';
+import { colors } from '../styles';
 
 // Función para generar IDs únicos
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -67,12 +67,12 @@ export default function AddExerciseScreen({ navigation }) {
         {/* Buscador */}
         <View className="mt-6 mb-4">
           <View className="bg-gray-800 rounded-xl px-4 py-3 flex-row items-center">
-            <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
+            <Ionicons name="search-outline" size={20} color={colors.text.secondary} />
             <TextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder="Buscar ejercicio"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={colors.text.secondary}
               className="flex-1 text-gray-100 ml-3 text-base"
             />
           </View>
@@ -91,7 +91,7 @@ export default function AddExerciseScreen({ navigation }) {
             value={exerciseName}
             onChangeText={setExerciseName}
             placeholder="Nombre del ejercicio"
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={colors.text.secondary}
             className="bg-gray-800 text-white text-xl font-bold rounded-xl px-4 py-3"
           />
         </View>
@@ -105,7 +105,7 @@ export default function AddExerciseScreen({ navigation }) {
             value={description}
             onChangeText={setDescription}
             placeholder="Agrega notas o instrucciones sobre el ejercicio..."
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={colors.text.secondary}
             multiline
             numberOfLines={4}
             textAlignVertical="top"
@@ -216,7 +216,7 @@ export default function AddExerciseScreen({ navigation }) {
                 value={restMinutes}
                 onChangeText={setRestMinutes}
                 placeholder="Minutos"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.text.secondary}
                 keyboardType="numeric"
                 className="bg-gray-800 text-gray-100 rounded-xl px-4 py-4 text-base text-center"
               />
@@ -226,7 +226,7 @@ export default function AddExerciseScreen({ navigation }) {
                 value={restSeconds}
                 onChangeText={setRestSeconds}
                 placeholder="Segundos"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.text.secondary}
                 keyboardType="numeric"
                 className="bg-gray-800 text-gray-100 rounded-xl px-4 py-4 text-base text-center"
               />

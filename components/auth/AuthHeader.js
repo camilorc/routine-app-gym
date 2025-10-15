@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../theme/colors';
+import { colors } from '../../styles';
 
 export const AuthHeader = ({ title, subtitle, iconName }) => {
   return (
@@ -10,7 +10,7 @@ export const AuthHeader = ({ title, subtitle, iconName }) => {
         <Ionicons 
           name={iconName} 
           size={32} 
-          color={colors.textSecondary} 
+          color={colors.text.secondary} 
         />
       </View>
       <Text className="text-2xl font-light text-gray-100 text-center mb-2">

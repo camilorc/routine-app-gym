@@ -7,7 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider } from './auth/AuthContext';
-import { colors } from './theme/colors';
+import { colors } from './styles';
 import { TabIcon } from './components/TabIcon';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -46,11 +46,11 @@ function TabNavigator() {
 
           return <TabIcon name={iconName} focused={focused} />;
         },
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarActiveTintColor: colors.accent.primary,
+        tabBarInactiveTintColor: colors.text.secondary,
         tabBarStyle: {
-          backgroundColor: colors.background,
-          borderTopColor: colors.border,
+          backgroundColor: colors.background.primary,
+          borderTopColor: colors.border.primary,
           borderTopWidth: 1,
           paddingTop: 8,
           paddingBottom: 8 + insets.bottom,
@@ -90,7 +90,7 @@ function RootStack() {
       screenOptions={{
         headerShown: false,
         presentation: 'card',
-        cardStyle: { backgroundColor: colors.background },
+        cardStyle: { backgroundColor: colors.background.primary },
       }}
     >
       <Stack.Screen name="Tabs" component={TabNavigator} />
@@ -105,7 +105,7 @@ export default function App() {
       <AuthProvider>
         <NavigationContainer>
           <RootStack />
-          <StatusBar style="light" backgroundColor={colors.background} />
+          <StatusBar style="light" backgroundColor={colors.background.primary} />
         </NavigationContainer>
       </AuthProvider>
     </SafeAreaProvider>

@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../auth/AuthContext';
-import { colors } from '../../theme/colors';
+import { colors } from '../../styles';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();

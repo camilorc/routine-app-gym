@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-nativ
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../auth/AuthContext';
-import { colors } from '../theme/colors';
+import { colors } from '../styles';
 
 export default function CreateRoutineScreen({ navigation }) {
   const { user } = useAuth();
@@ -39,7 +39,7 @@ export default function CreateRoutineScreen({ navigation }) {
               value={routineName}
               onChangeText={setRoutineName}
               placeholder="Ej: Rutina de Fuerza"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={colors.text.secondary}
               className="bg-gray-800 text-gray-100 rounded-xl px-4 py-4 text-base border border-transparent focus:border-[#06D6A0]"
             />
           </View>
@@ -53,7 +53,7 @@ export default function CreateRoutineScreen({ navigation }) {
               value={description}
               onChangeText={setDescription}
               placeholder="Describe tu rutina..."
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={colors.text.secondary}
               multiline
               numberOfLines={4}
               textAlignVertical="top"

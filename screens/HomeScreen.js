@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth/AuthContext';
-import { colorClasses } from '../theme/colors';
+import { colors, textStyles, containerStyles } from '../styles';
 
 export default function HomeScreen() {
   const { user, loading } = useAuth();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../theme/colors';
+import { colors } from '../../styles';
 
 export const AuthInput = ({ 
   label, 
@@ -26,7 +26,7 @@ export const AuthInput = ({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor={colors.text.secondary}
           secureTextEntry={secureTextEntry && !showPassword}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
@@ -41,7 +41,7 @@ export const AuthInput = ({
             <Ionicons
               name={showPassword ? "eye-off-outline" : "eye-outline"}
               size={20}
-              color={colors.textSecondary}
+              color={colors.text.secondary}
             />
           </TouchableOpacity>
         )}
