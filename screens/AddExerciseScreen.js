@@ -10,6 +10,7 @@ const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9
 export default function AddExerciseScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [exerciseName, setExerciseName] = useState('');
+  const [description, setDescription] = useState('');
   const [series, setSeries] = useState([
     { id: generateId(), series: '', reps: '', weight: '', rir: '' },
   ]);
@@ -92,6 +93,23 @@ export default function AddExerciseScreen({ navigation }) {
             placeholder="Nombre del ejercicio"
             placeholderTextColor={colors.textSecondary}
             className="bg-gray-800 text-white text-xl font-bold rounded-xl px-4 py-3"
+          />
+        </View>
+
+        {/* Descripción del ejercicio */}
+        <View className="mb-6">
+          <Text className="text-gray-400 text-sm mb-2 font-medium">
+            Descripción (opcional)
+          </Text>
+          <TextInput
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Agrega notas o instrucciones sobre el ejercicio..."
+            placeholderTextColor={colors.textSecondary}
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+            className="bg-gray-800 text-gray-100 rounded-xl px-4 py-3 text-base h-28"
           />
         </View>
 
