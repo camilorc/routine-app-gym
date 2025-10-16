@@ -6,13 +6,19 @@ Esta carpeta contiene todos los estilos centralizados de la aplicación organiza
 
 ```
 styles/
-├── styleDark/              # Tema oscuro (actual)
-│   ├── colors.js          # Paleta de colores
+├── styleDark/              # Tema oscuro (predeterminado)
+│   ├── colors.js          # Paleta de colores oscuros
 │   ├── commonStyles.js    # Estilos comunes
 │   ├── examples.js        # Ejemplos de uso
 │   └── README.md          # Documentación detallada
-├── index.js               # Exportaciones principales
-└── README.md              # Este archivo
+├── styleLight/             # Tema claro
+│   ├── colors.js          # Paleta de colores claros
+│   ├── commonStyles.js    # Estilos comunes
+│   ├── examples.js        # Ejemplos de uso
+│   └── README.md          # Documentación detallada
+├── index.js               # Exportaciones principales (tema oscuro por defecto)
+├── README.md              # Este archivo
+└── STRUCTURE.md           # Diagrama de estructura
 ```
 
 ## Uso Básico
@@ -54,11 +60,17 @@ export const MiComponente = () => {
 
 ## Temas Disponibles
 
-### styleDark (Actual)
+### styleDark (Predeterminado)
 Tema oscuro con los siguientes colores principales:
 - **Fondo**: #0B0F0E (negro/verde oscuro)
 - **Acento**: #06D6A0 (verde brillante)
 - **Texto**: #F5F5F5 (blanco)
+
+### styleLight
+Tema claro inspirado en interfaces modernas:
+- **Fondo**: #F9FAFB (gris muy claro)
+- **Acento**: #10A37F (verde estilo ChatGPT)
+- **Texto**: #111827 (gris casi negro)
 
 ## Colores Principales
 
@@ -101,14 +113,34 @@ Para ver la documentación completa, ejemplos detallados y mejores prácticas, c
 
 📖 [Documentación del tema Dark](./styleDark/README.md)
 
+## Cambiar entre Temas
+
+Para cambiar entre tema oscuro y claro:
+
+```javascript
+// Tema oscuro (actual por defecto)
+import { colors, buttonStyles } from './styles';
+
+// Tema claro
+import { colors, buttonStyles } from './styles/styleLight';
+```
+
+En el futuro, esto se puede hacer dinámicamente con un contexto de tema:
+
+```javascript
+// Ejemplo futuro con contexto
+const { theme } = useTheme();
+const styles = theme === 'dark' ? styleDark : styleLight;
+```
+
 ## Agregar Nuevos Temas
 
-Para agregar un nuevo tema (ej: styleLight):
+Para agregar un nuevo tema personalizado:
 
-1. Crea una nueva carpeta: `styles/styleLight/`
-2. Copia la estructura de `styleDark/`
+1. Crea una nueva carpeta: `styles/styleCustom/`
+2. Copia la estructura de `styleDark/` o `styleLight/`
 3. Modifica los colores y estilos según el nuevo tema
-4. Actualiza `index.js` para exportar el nuevo tema
+4. Opcionalmente actualiza `index.js` para exportar el nuevo tema
 5. Documenta los cambios en este README
 
 ## Migración desde theme/colors.js

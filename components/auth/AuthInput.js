@@ -18,7 +18,10 @@ export const AuthInput = ({
 }) => {
   return (
     <View className={`mb-4 ${style}`}>
-      <Text className="text-sm text-gray-400 mb-2 font-medium">
+      <Text 
+        className="text-sm mb-2 font-medium"
+        style={{ color: colors.text.secondary }}
+      >
         {label}
       </Text>
       <View className="relative">
@@ -31,7 +34,12 @@ export const AuthInput = ({
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           autoCorrect={autoCorrect}
-          className="bg-gray-800 text-gray-100 rounded-xl px-4 py-4 text-base border border-transparent focus:border-emerald-400"
+          className="rounded-xl px-4 py-4 text-base border"
+          style={{ 
+            backgroundColor: colors.background.secondary, 
+            color: colors.text.primary,
+            borderColor: colors.border.light
+          }}
         />
         {secureTextEntry && (
           <TouchableOpacity

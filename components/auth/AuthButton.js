@@ -15,10 +15,18 @@ export const AuthButton = ({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled || isLoading}
-      className={`${disabled || isLoading ? 'bg-gray-600' : 'bg-emerald-600'} rounded-xl p-4 flex-row items-center justify-center`}
+      className="rounded-xl p-4 flex-row items-center justify-center"
+      style={{ 
+        backgroundColor: (disabled || isLoading) 
+          ? colors.disabled 
+          : (colors.accent.bright || colors.accent.primary)
+      }}
     >
       {isLoading ? (
-        <Text className="text-gray-300 font-medium text-base">
+        <Text 
+          className="font-medium text-base"
+          style={{ color: colors.text.secondary }}
+        >
           {loadingText}
         </Text>
       ) : (

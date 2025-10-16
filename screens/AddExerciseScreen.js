@@ -49,16 +49,22 @@ export default function AddExerciseScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0B0F0E]">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background.primary }}>
       {/* Header */}
-      <View className="flex-row items-center px-6 py-4 border-b border-gray-800">
+      <View 
+        className="flex-row items-center px-6 py-4 border-b"
+        style={{ borderColor: colors.border.primary }}
+      >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           className="mr-4"
         >
-          <Ionicons name="arrow-back" size={24} color="#FFF" />
+          <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text className="text-white text-xl font-bold flex-1">
+        <Text 
+          className="text-xl font-bold flex-1"
+          style={{ color: colors.text.primary }}
+        >
           Añadir Ejercicio
         </Text>
       </View>
@@ -66,21 +72,28 @@ export default function AddExerciseScreen({ navigation }) {
       <ScrollView className="flex-1 px-6">
         {/* Buscador */}
         <View className="mt-6 mb-4">
-          <View className="bg-gray-800 rounded-xl px-4 py-3 flex-row items-center">
+          <View 
+            className="rounded-xl px-4 py-3 flex-row items-center" 
+            style={{ backgroundColor: colors.background.secondary, borderColor: colors.border.light, borderWidth: 1 }}
+          >
             <Ionicons name="search-outline" size={20} color={colors.text.secondary} />
             <TextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder="Buscar ejercicio"
               placeholderTextColor={colors.text.secondary}
-              className="flex-1 text-gray-100 ml-3 text-base"
+              className="flex-1 ml-3 text-base"
+              style={{ color: colors.text.primary }}
             />
           </View>
         </View>
 
         {/* O crear un nuevo ejercicio */}
         <TouchableOpacity className="mb-6">
-          <Text className="text-gray-400 text-center text-sm">
+          <Text 
+            className="text-center text-sm"
+            style={{ color: colors.text.secondary }}
+          >
             O crea un nuevo ejercicio.
           </Text>
         </TouchableOpacity>
@@ -92,13 +105,22 @@ export default function AddExerciseScreen({ navigation }) {
             onChangeText={setExerciseName}
             placeholder="Nombre del ejercicio"
             placeholderTextColor={colors.text.secondary}
-            className="bg-gray-800 text-white text-xl font-bold rounded-xl px-4 py-3"
+            className="text-xl font-bold rounded-xl px-4 py-3"
+            style={{ 
+              backgroundColor: colors.background.secondary, 
+              color: colors.text.primary,
+              borderColor: colors.border.light,
+              borderWidth: 1
+            }}
           />
         </View>
 
         {/* Descripción del ejercicio */}
         <View className="mb-6">
-          <Text className="text-gray-400 text-sm mb-2 font-medium">
+          <Text 
+            className="text-sm mb-2 font-medium"
+            style={{ color: colors.text.secondary }}
+          >
             Descripción (opcional)
           </Text>
           <TextInput
@@ -109,25 +131,46 @@ export default function AddExerciseScreen({ navigation }) {
             multiline
             numberOfLines={4}
             textAlignVertical="top"
-            className="bg-gray-800 text-gray-100 rounded-xl px-4 py-3 text-base h-28"
+            className="rounded-xl px-4 py-3 text-base h-28"
+            style={{ 
+              backgroundColor: colors.background.secondary, 
+              color: colors.text.primary,
+              borderColor: colors.border.light,
+              borderWidth: 1
+            }}
           />
         </View>
 
         {/* Tabla de series */}
         <View className="mb-6">
-          <View className="bg-gray-800 rounded-xl p-4">
+          <View 
+            className="rounded-xl p-4"
+            style={{ backgroundColor: colors.background.secondary }}
+          >
             {/* Header de la tabla */}
             <View className="flex-row mb-3 items-center">
-              <Text className="text-gray-400 text-xs font-semibold flex-1 text-center mx-1">
+              <Text 
+                className="text-xs font-semibold flex-1 text-center mx-1"
+                style={{ color: colors.text.secondary }}
+              >
                 SERIES
               </Text>
-              <Text className="text-gray-400 text-xs font-semibold flex-1 text-center mx-1">
+              <Text 
+                className="text-xs font-semibold flex-1 text-center mx-1"
+                style={{ color: colors.text.secondary }}
+              >
                 REPS
               </Text>
-              <Text className="text-gray-400 text-xs font-semibold flex-1 text-center mx-1">
+              <Text 
+                className="text-xs font-semibold flex-1 text-center mx-1"
+                style={{ color: colors.text.secondary }}
+              >
                 PESO (KG)
               </Text>
-              <Text className="text-gray-400 text-xs font-semibold flex-1 text-center mx-1">
+              <Text 
+                className="text-xs font-semibold flex-1 text-center mx-1"
+                style={{ color: colors.text.secondary }}
+              >
                 RIR
               </Text>
               <View className="w-8" />
@@ -141,7 +184,8 @@ export default function AddExerciseScreen({ navigation }) {
                     value={serie.series}
                     onChangeText={(value) => updateSeriesField(serie.id, 'series', value)}
                     keyboardType="numeric"
-                    className="bg-gray-700 text-white text-center rounded-lg py-2 w-full text-base"
+                    className="text-center rounded-lg py-2 w-full text-base"
+                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1 }}
                   />
                 </View>
                 <View className="flex-1 items-center mx-1">
@@ -149,7 +193,8 @@ export default function AddExerciseScreen({ navigation }) {
                     value={serie.reps}
                     onChangeText={(value) => updateSeriesField(serie.id, 'reps', value)}
                     keyboardType="numeric"
-                    className="bg-gray-700 text-white text-center rounded-lg py-2 w-full text-base"
+                    className="text-center rounded-lg py-2 w-full text-base"
+                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1 }}
                   />
                 </View>
                 <View className="flex-1 items-center mx-1">
@@ -157,7 +202,8 @@ export default function AddExerciseScreen({ navigation }) {
                     value={serie.weight}
                     onChangeText={(value) => updateSeriesField(serie.id, 'weight', value)}
                     keyboardType="numeric"
-                    className="bg-gray-700 text-white text-center rounded-lg py-2 w-full text-base"
+                    className="text-center rounded-lg py-2 w-full text-base"
+                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1 }}
                   />
                 </View>
                 <View className="flex-1 items-center mx-1">
@@ -165,7 +211,8 @@ export default function AddExerciseScreen({ navigation }) {
                     value={serie.rir}
                     onChangeText={(value) => updateSeriesField(serie.id, 'rir', value)}
                     keyboardType="numeric"
-                    className="bg-gray-700 text-white text-center rounded-lg py-2 w-full text-base"
+                    className="text-center rounded-lg py-2 w-full text-base"
+                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1 }}
                   />
                 </View>
                 {series.length > 1 ? (
@@ -173,7 +220,7 @@ export default function AddExerciseScreen({ navigation }) {
                     onPress={() => deleteSeries(serie.id)}
                     className="w-8 items-center"
                   >
-                    <Ionicons name="trash-outline" size={20} color="#9CA3AF" />
+                    <Ionicons name="trash-outline" size={20} color={colors.text.secondary} />
                   </TouchableOpacity>
                 ) : (
                   <View className="w-8" />
@@ -185,19 +232,22 @@ export default function AddExerciseScreen({ navigation }) {
             <TouchableOpacity
               onPress={addSeries}
               disabled={!canAddSeries}
-              className={`border-2 border-dashed rounded-xl py-3 mt-3 ${
-                canAddSeries ? 'border-gray-600' : 'border-gray-700 opacity-50'
-              }`}
+              className="border-2 border-dashed rounded-xl py-3 mt-3"
+              style={{
+                borderColor: canAddSeries ? colors.border.secondary : colors.border.light,
+                opacity: canAddSeries ? 1 : 0.5
+              }}
             >
               <View className="flex-row items-center justify-center">
                 <Ionicons 
                   name="add" 
                   size={20} 
-                  color={canAddSeries ? "#06D6A0" : "#6B7280"} 
+                  color={canAddSeries ? colors.accent.primary : colors.text.secondary} 
                 />
-                <Text className={`ml-2 font-semibold ${
-                  canAddSeries ? 'text-[#06D6A0]' : 'text-gray-500'
-                }`}>
+                <Text 
+                  className="ml-2 font-semibold"
+                  style={{ color: canAddSeries ? colors.accent.primary : colors.text.secondary }}
+                >
                   Añadir serie
                 </Text>
               </View>
@@ -207,7 +257,10 @@ export default function AddExerciseScreen({ navigation }) {
 
         {/* Tiempo de Descanso */}
         <View className="mb-6">
-          <Text className="text-gray-400 text-sm mb-3 font-medium">
+          <Text 
+            className="text-sm mb-3 font-medium"
+            style={{ color: colors.text.secondary }}
+          >
             Tiempo de Descanso
           </Text>
           <View className="flex-row gap-3">
@@ -218,7 +271,13 @@ export default function AddExerciseScreen({ navigation }) {
                 placeholder="Minutos"
                 placeholderTextColor={colors.text.secondary}
                 keyboardType="numeric"
-                className="bg-gray-800 text-gray-100 rounded-xl px-4 py-4 text-base text-center"
+                className="rounded-xl px-4 py-4 text-base text-center"
+                style={{ 
+                  backgroundColor: colors.background.secondary, 
+                  color: colors.text.primary,
+                  borderColor: colors.border.light,
+                  borderWidth: 1
+                }}
               />
             </View>
             <View className="flex-1">
@@ -228,7 +287,13 @@ export default function AddExerciseScreen({ navigation }) {
                 placeholder="Segundos"
                 placeholderTextColor={colors.text.secondary}
                 keyboardType="numeric"
-                className="bg-gray-800 text-gray-100 rounded-xl px-4 py-4 text-base text-center"
+                className="rounded-xl px-4 py-4 text-base text-center"
+                style={{ 
+                  backgroundColor: colors.background.secondary, 
+                  color: colors.text.primary,
+                  borderColor: colors.border.light,
+                  borderWidth: 1
+                }}
               />
             </View>
           </View>
@@ -237,9 +302,10 @@ export default function AddExerciseScreen({ navigation }) {
         {/* Botón Añadir a la Rutina */}
         <TouchableOpacity
           onPress={handleAddToRoutine}
-          className="bg-[#06D6A0] rounded-xl p-4 mb-6"
+          className="rounded-xl p-4 mb-6"
+          style={{ backgroundColor: colors.accent.bright || colors.accent.primary }}
         >
-          <Text className="text-[#0B0F0E] font-semibold text-center text-base">
+          <Text className="text-white font-semibold text-center text-base">
             Añadir a la Rutina
           </Text>
         </TouchableOpacity>

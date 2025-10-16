@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../auth/AuthContext';
-import { colors } from '../../styles';
+import { colors, textStyles, buttonStyles, containerStyles } from '../../styles';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
@@ -42,47 +42,65 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-900">
+    <SafeAreaView className={containerStyles.screen}>
       <ScrollView className="flex-1">
         <View className="flex-1 px-6 py-8">
           {/* Header */}
           <View className="items-center mb-8">
-            <View className="w-20 h-20 bg-gray-800 rounded-full items-center justify-center mb-4">
-              <Ionicons name="person" size={32} color={colors.textPrimary} />
+            <View className="w-20 h-20 rounded-full items-center justify-center mb-4" style={{ backgroundColor: colors.background.secondary }}>
+              <Ionicons name="person" size={32} color={colors.text.primary} />
             </View>
-            <Text className="text-2xl font-light text-gray-100 text-center">
+            <Text className={`${textStyles.h2} text-center`}>
               Mi Cuenta
             </Text>
           </View>
 
           {/* Información del usuario */}
           <View className="mb-8">
-            <View className="bg-gray-800 rounded-xl p-4 mb-4">
-              <Text className="text-sm text-gray-400 mb-1">
+            <View 
+              className="border-2 border-dashed rounded-xl p-4 mb-4"
+              style={{ 
+                backgroundColor: colors.background.secondary,
+                borderColor: colors.border.secondary
+              }}
+            >
+              <Text className={textStyles.label}>
                 Email
               </Text>
-              <Text className="text-base text-gray-100">
+              <Text className={textStyles.body}>
                 {user.email}
               </Text>
             </View>
 
             {user.user_metadata?.full_name && (
-              <View className="bg-gray-800 rounded-xl p-4 mb-4">
-                <Text className="text-sm text-gray-400 mb-1">
+              <View 
+                className="border-2 border-dashed rounded-xl p-4 mb-4"
+                style={{ 
+                  backgroundColor: colors.background.secondary,
+                  borderColor: colors.border.secondary
+                }}
+              >
+                <Text className={textStyles.label}>
                   Nombre
                 </Text>
-                <Text className="text-base text-gray-100">
+                <Text className={textStyles.body}>
                   {user.user_metadata.full_name}
                 </Text>
               </View>
             )}
 
             {user.last_sign_in_at && (
-              <View className="bg-gray-800 rounded-xl p-4">
-                <Text className="text-sm text-gray-400 mb-1">
+              <View 
+                className="border-2 border-dashed rounded-xl p-4"
+                style={{ 
+                  backgroundColor: colors.background.secondary,
+                  borderColor: colors.border.secondary
+                }}
+              >
+                <Text className={textStyles.label}>
                   Último inicio de sesión
                 </Text>
-                <Text className="text-base text-gray-100">
+                <Text className={textStyles.body}>
                   {formatDate(user.last_sign_in_at)}
                 </Text>
               </View>
@@ -92,10 +110,11 @@ export default function ProfileScreen() {
           {/* Botón de cerrar sesión */}
           <TouchableOpacity
             onPress={handleSignOut}
-            className="bg-red-600 rounded-xl p-4 flex-row items-center justify-center"
+            className="rounded-xl p-4 flex-row items-center justify-center"
+            style={{ backgroundColor: colors.accent.bright || colors.accent.primary }}
           >
             <Ionicons name="log-out-outline" size={20} color="white" />
-            <Text className="text-white font-medium ml-2 text-base">
+            <Text className="text-white font-semibold text-center text-base ml-2">
               Cerrar Sesión
             </Text>
           </TouchableOpacity>

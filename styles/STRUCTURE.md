@@ -2,18 +2,22 @@
 
 ```
 appStrongo/
-├── theme/
-│   └── colors.js                    # [LEGACY] Mantener para compatibilidad
-│
-└── styles/                          # ✨ NUEVA ESTRUCTURA
-    ├── index.js                     # Exportaciones principales
+└── styles/                          # ✨ ESTRUCTURA DE ESTILOS
+    ├── index.js                     # Exportaciones principales (styleDark por defecto)
     ├── README.md                    # Documentación principal
+    ├── STRUCTURE.md                 # Este archivo
     │
-    └── styleDark/                   # 🌑 Tema oscuro (ACTUAL)
-        ├── colors.js                # Paleta de colores del tema oscuro
+    ├── styleDark/                   # 🌑 Tema oscuro (PREDETERMINADO)
+    │   ├── colors.js                # Paleta de colores del tema oscuro
+    │   ├── commonStyles.js          # Estilos comunes (botones, inputs, etc.)
+    │   ├── examples.js              # Ejemplos de uso
+    │   └── README.md                # Documentación del tema oscuro
+    │
+    └── styleLight/                  # ☀️ Tema claro
+        ├── colors.js                # Paleta de colores del tema claro
         ├── commonStyles.js          # Estilos comunes (botones, inputs, etc.)
         ├── examples.js              # Ejemplos de uso
-        └── README.md                # Documentación del tema oscuro
+        └── README.md                # Documentación del tema claro
 ```
 
 ## 📦 Archivos por Carpeta
@@ -95,11 +99,24 @@ import {
 5. **Documentada**: README en cada nivel
 6. **Tipada**: Fácil de autocompletar en el IDE
 
-## 🔮 Futuros Temas
+## 🎨 Temas Disponibles
 
 ```
 styles/
-├── styleDark/      # ✅ Implementado
-├── styleLight/     # 🔄 Pendiente (tema claro)
-└── styleCustom/    # 💡 Personalizable por usuario
+├── styleDark/      # ✅ Tema oscuro (predeterminado)
+│   └── Negro/verde con acentos brillantes
+├── styleLight/     # ✅ Tema claro
+│   └── Blanco/gris con verde estilo ChatGPT
+└── styleCustom/    # 💡 Futuro: Personalizable por usuario
 ```
+
+### Comparación de Temas
+
+| Característica | styleDark | styleLight |
+|---------------|-----------|------------|
+| Fondo principal | #0B0F0E (muy oscuro) | #F9FAFB (muy claro) |
+| Contenedores | #1F2937 (gris oscuro) | #FFFFFF (blanco) |
+| Texto principal | #F5F5F5 (blanco) | #111827 (casi negro) |
+| Acento | #06D6A0 (verde brillante) | #10A37F (verde ChatGPT) |
+| Bordes | #374151 (gris oscuro) | #E5E7EB (gris claro) |
+| Uso recomendado | Ambientes con poca luz | Ambientes con buena iluminación |

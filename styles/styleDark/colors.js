@@ -19,6 +19,7 @@ export const colors = {
     primary: "#06D6A0",        // Verde brillante principal
     secondary: "#05C091",      // Verde hover/pressed
     tertiary: "#04A779",       // Verde oscuro
+    bright: "#059669",         // Verde más oscuro para botones (menos brillante)
   },
   
   // Bordes
