@@ -19,7 +19,7 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className={containerStyles.screen}>
+      <SafeAreaView className={containerStyles.screen} style={{ backgroundColor: colors.background.primary }}>
         <View className="flex-1 justify-center items-center">
           <Text className={textStyles.body}>Cargando...</Text>
         </View>
@@ -28,7 +28,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView className={containerStyles.screen}>
+    <SafeAreaView className={containerStyles.screen} style={{ backgroundColor: colors.background.primary }}>
       <View className="flex-1 justify-center items-center px-6">
         <View className="max-w-sm w-full">
           {user ? (
@@ -39,7 +39,7 @@ export default function HomeScreen() {
               <Text className="text-xl text-center mb-6 font-medium" style={{ color: colors.accent.primary }}>
                 {getUserDisplayName()}
               </Text>
-              <Text className={`text-base text-center leading-6 ${textStyles.bodySecondary}`}>
+              <Text className="text-base text-center leading-6" style={{ color: colors.text.secondary }}>
                 Nos alegra tenerte de vuelta. Explora todas las funcionalidades disponibles en tu cuenta.
               </Text>
             </View>
@@ -48,10 +48,10 @@ export default function HomeScreen() {
               <Text className="text-3xl font-light text-center mb-4" style={{ color: colors.text.primary }}>
                 ¡Bienvenido!
               </Text>
-              <Text className={`text-base text-center leading-6 mb-6 ${textStyles.bodySecondary}`}>
+              <Text className="text-base text-center leading-6 mb-6" style={{ color: colors.text.secondary }}>
                 Descubre una experiencia única y personalizada.
               </Text>
-              <Text className={`text-sm text-center ${textStyles.bodySecondary}`}>
+              <Text className="text-sm text-center" style={{ color: colors.text.secondary }}>
                 Inicia sesión en la pestaña "Mi Cuenta" para acceder a todas las funcionalidades.
               </Text>
             </View>

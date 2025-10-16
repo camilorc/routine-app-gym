@@ -20,7 +20,7 @@ export default function CreateRoutineScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView className={containerStyles.screen}>
+    <SafeAreaView className={containerStyles.screen} style={{ backgroundColor: colors.background.primary }}>
       {user ? (
         // Usuario logueado - Formulario de crear rutina
         <ScrollView className="flex-1 px-6 pt-6">
@@ -32,7 +32,7 @@ export default function CreateRoutineScreen({ navigation }) {
 
           {/* Input Nombre de la rutina */}
           <View className={inputStyles.base.container}>
-            <Text className={inputStyles.base.label}>
+            <Text className="text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>
               Nombre de la rutina
             </Text>
             <TextInput
@@ -47,7 +47,7 @@ export default function CreateRoutineScreen({ navigation }) {
 
           {/* TextArea Descripción */}
           <View className={inputStyles.textarea.container}>
-            <Text className={inputStyles.textarea.label}>
+            <Text className="text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>
               Descripción
             </Text>
             <TextInput
@@ -80,7 +80,7 @@ export default function CreateRoutineScreen({ navigation }) {
               <Text className="text-base font-semibold mb-1" style={{ color: colors.text.primary }}>
                 Añadir Ejercicios
               </Text>
-              <Text className={`text-sm text-center ${textStyles.bodySecondary}`}>
+              <Text className="text-sm text-center" style={{ color: colors.text.secondary }}>
                 Comienza a construir tu rutina añadiendo ejercicios.
               </Text>
             </TouchableOpacity>
@@ -124,7 +124,7 @@ export default function CreateRoutineScreen({ navigation }) {
             </View>
           </View>
           
-          <Text className={`text-sm text-center mt-6 px-4 ${textStyles.bodySecondary}`}>
+          <Text className="text-sm text-center mt-6 px-4" style={{ color: colors.text.secondary }}>
             Ve a la pestaña "Mi Cuenta" para registrarte o iniciar sesión
           </Text>
         </View>

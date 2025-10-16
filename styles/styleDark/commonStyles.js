@@ -93,8 +93,8 @@ export const inputStyles = {
 
 // Estilos de contenedores
 export const containerStyles = {
-  // Pantalla completa
-  screen: 'flex-1 bg-[#0B0F0E]',
+  // Pantalla completa (sin color de fondo - se aplica con style)
+  screen: 'flex-1',
   
   // Contenedor con padding
   content: 'flex-1 px-6 py-8',

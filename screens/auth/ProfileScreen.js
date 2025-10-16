@@ -42,7 +42,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView className={containerStyles.screen}>
+    <SafeAreaView className={containerStyles.screen} style={{ backgroundColor: colors.background.primary }}>
       <ScrollView className="flex-1">
         <View className="flex-1 px-6 py-8">
           {/* Header */}
@@ -64,10 +64,10 @@ export default function ProfileScreen() {
                 borderColor: colors.border.secondary
               }}
             >
-              <Text className={textStyles.label}>
+              <Text className="text-sm font-medium mb-1" style={{ color: colors.text.secondary }}>
                 Email
               </Text>
-              <Text className={textStyles.body}>
+              <Text className="text-base" style={{ color: colors.text.primary }}>
                 {user.email}
               </Text>
             </View>
@@ -80,10 +80,10 @@ export default function ProfileScreen() {
                   borderColor: colors.border.secondary
                 }}
               >
-                <Text className={textStyles.label}>
+                <Text className="text-sm font-medium mb-1" style={{ color: colors.text.secondary }}>
                   Nombre
                 </Text>
-                <Text className={textStyles.body}>
+                <Text className="text-base" style={{ color: colors.text.primary }}>
                   {user.user_metadata.full_name}
                 </Text>
               </View>
@@ -97,10 +97,10 @@ export default function ProfileScreen() {
                   borderColor: colors.border.secondary
                 }}
               >
-                <Text className={textStyles.label}>
+                <Text className="text-sm font-medium mb-1" style={{ color: colors.text.secondary }}>
                   Último inicio de sesión
                 </Text>
-                <Text className={textStyles.body}>
+                <Text className="text-base" style={{ color: colors.text.primary }}>
                   {formatDate(user.last_sign_in_at)}
                 </Text>
               </View>
