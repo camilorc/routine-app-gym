@@ -7,6 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider } from './auth/AuthContext';
+import { RoutinesProvider } from './contexts/RoutinesContext';
 import { colors } from './styles';
 import { TabIcon } from './components/TabIcon';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,11 +15,30 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 // Importar pantallas
 import HomeScreen from './screens/HomeScreen';
 import { AuthContainer } from './screens/auth';
+import RoutinesListScreen from './screens/RoutinesListScreen';
 import CreateRoutineScreen from './screens/CreateRoutineScreen';
 import AddExerciseScreen from './screens/AddExerciseScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const RoutinesStack = createStackNavigator();
+
+// Stack Navigator para la sección de Rutinas
+function RoutinesStackNavigator() {
+  return (
+    <RoutinesStack.Navigator
+      screenOptions={{
+        headerShown: false,
+        presentation: 'card',
+        cardStyle: { backgroundColor: colors.background.primary },
+      }}
+    >
+      <RoutinesStack.Screen name="RoutinesList" component={RoutinesListScreen} />
+      <RoutinesStack.Screen name="CreateRoutine" component={CreateRoutineScreen} />
+      <RoutinesStack.Screen name="AddExercise" component={AddExerciseScreen} />
+    </RoutinesStack.Navigator>
+  );
+}
 
 function TabNavigator() {
   const insets = useSafeAreaInsets();
@@ -34,10 +54,11 @@ function TabNavigator() {
           } else if (route.name === 'Create') {
             // Botón especial para crear rutina
             return (
-              <View className={`w-8 h-8 rounded-md items-center justify-center ${
-                focused ? 'bg-[#06D6A0]' : 'bg-[#06D6A0]'
-              }`}>
-                <Ionicons name="add" size={16} color="#0B0F0E" />
+              <View 
+                className="w-8 h-8 rounded-md items-center justify-center"
+                style={{ backgroundColor: colors.accent.bright || colors.accent.primary }}
+              >
+                <Ionicons name="add" size={16} color={colors.background.primary} />
               </View>
             );
           } else if (route.name === 'Account') {
@@ -70,9 +91,9 @@ function TabNavigator() {
       />
       <Tab.Screen 
         name="Create" 
-        component={CreateRoutineScreen}
+        component={RoutinesStackNavigator}
         options={{ 
-          tabBarLabel: 'Crear'
+          tabBarLabel: 'Rutinas'
         }}
       />
       <Tab.Screen 
@@ -94,7 +115,6 @@ function RootStack() {
       }}
     >
       <Stack.Screen name="Tabs" component={TabNavigator} />
-      <Stack.Screen name="AddExercise" component={AddExerciseScreen} />
     </Stack.Navigator>
   );
 }
@@ -103,10 +123,12 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <NavigationContainer>
-          <RootStack />
-          <StatusBar style="light" backgroundColor={colors.background.primary} />
-        </NavigationContainer>
+        <RoutinesProvider>
+          <NavigationContainer>
+            <RootStack />
+            <StatusBar style="dark" backgroundColor={colors.background.primary} />
+          </NavigationContainer>
+        </RoutinesProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

@@ -13,9 +13,9 @@
  */
 
 // ========================================
-// TEMA OSCURO (ACTIVO)
+// TEMA CLARO (ACTIVO)
 // ========================================
-export { colors, legacyColors } from './styleDark/colors';
+export { colors, legacyColors } from './styleLight/colors';
 export {
   textStyles,
   buttonStyles,
@@ -27,12 +27,12 @@ export {
   badgeStyles,
   tabStyles,
   combineStyles,
-} from './styleDark/commonStyles';
+} from './styleLight/commonStyles';
 
 // ========================================
-// TEMA CLARO (DESACTIVADO)
+// TEMA OSCURO (DESACTIVADO)
 // ========================================
-// export { colors, legacyColors } from './styleLight/colors';
+// export { colors, legacyColors } from './styleDark/colors';
 // export {
 //   textStyles,
 //   buttonStyles,
@@ -44,4 +44,4 @@ export {
 //   badgeStyles,
 //   tabStyles,
 //   combineStyles,
-// } from './styleLight/commonStyles';
+// } from './styleDark/commonStyles';

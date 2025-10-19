@@ -3,10 +3,12 @@ import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../auth/AuthContext';
+import { useRoutines } from '../../contexts/RoutinesContext';
 import { colors, textStyles, buttonStyles, containerStyles } from '../../styles';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const { clearAllData } = useRoutines();
 
   const handleSignOut = async () => {
     Alert.alert(
@@ -24,6 +26,10 @@ export default function ProfileScreen() {
             const { error } = await signOut();
             if (error) {
               Alert.alert('Error', 'No se pudo cerrar la sesión');
+            } else {
+              // Limpiar todos los datos de rutinas al cerrar sesión
+              clearAllData();
+              console.log('Datos de rutinas limpiados al cerrar sesión');
             }
           },
         },

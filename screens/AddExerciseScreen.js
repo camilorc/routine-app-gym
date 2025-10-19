@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +7,10 @@ import { colors } from '../styles';
 // Función para generar IDs únicos
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-export default function AddExerciseScreen({ navigation }) {
+export default function AddExerciseScreen({ navigation, route }) {
+  const isEditing = route.params?.isEditing || false;
+  const exerciseToEdit = route.params?.exercise;
+
   const [searchQuery, setSearchQuery] = useState('');
   const [exerciseName, setExerciseName] = useState('');
   const [description, setDescription] = useState('');
@@ -16,6 +19,31 @@ export default function AddExerciseScreen({ navigation }) {
   ]);
   const [restMinutes, setRestMinutes] = useState('');
   const [restSeconds, setRestSeconds] = useState('');
+
+  // Cargar datos del ejercicio si está en modo edición
+  useEffect(() => {
+    if (isEditing && exerciseToEdit) {
+      setExerciseName(exerciseToEdit.name || '');
+      setDescription(exerciseToEdit.description || '');
+      
+      // Cargar series con IDs
+      if (exerciseToEdit.series && exerciseToEdit.series.length > 0) {
+        setSeries(exerciseToEdit.series.map(s => ({
+          ...s,
+          id: s.id || generateId()
+        })));
+      }
+      
+      // Parsear tiempo de descanso
+      if (exerciseToEdit.restTime) {
+        const timeMatch = exerciseToEdit.restTime.match(/(\d+)m\s*(\d+)s/);
+        if (timeMatch) {
+          setRestMinutes(timeMatch[1]);
+          setRestSeconds(timeMatch[2]);
+        }
+      }
+    }
+  }, [isEditing, exerciseToEdit]);
 
   const addSeries = () => {
     const newSeries = {
@@ -43,9 +71,49 @@ export default function AddExerciseScreen({ navigation }) {
   // Verificar si la última serie tiene el campo serie completado
   const canAddSeries = series.length > 0 && series[series.length - 1].series.trim() !== '';
 
+  // Validaciones para el botón "Añadir a la Rutina"
+  const hasExerciseName = searchQuery.trim() !== '' || exerciseName.trim() !== '';
+  const hasAtLeastOneSeries = series.length > 0 && series.some(serie => 
+    serie.series.trim() !== '' || 
+    serie.reps.trim() !== '' || 
+    serie.weight.trim() !== '' || 
+    serie.rir.trim() !== ''
+  );
+  const isAddToRoutineEnabled = hasExerciseName && hasAtLeastOneSeries;
+
   const handleAddToRoutine = () => {
-    console.log('Añadir ejercicio a la rutina');
-    navigation.goBack();
+    if (!isAddToRoutineEnabled) return;
+    
+    // Preparar el ejercicio con todos sus datos
+    const finalExerciseName = searchQuery.trim() !== '' ? searchQuery : exerciseName.trim();
+    const restTime = restMinutes || restSeconds 
+      ? `${restMinutes || '0'}m ${restSeconds || '0'}s` 
+      : null;
+    
+    const exercise = {
+      name: finalExerciseName,
+      description: description.trim(),
+      series: series.filter(serie => 
+        serie.series.trim() !== '' || 
+        serie.reps.trim() !== '' || 
+        serie.weight.trim() !== '' || 
+        serie.rir.trim() !== ''
+      ),
+      restTime: restTime,
+    };
+    
+    console.log('Ejercicio añadido a la rutina:', exercise);
+    
+    // Return the created/updated exercise via navigation params (serializable)
+    // Set params and go back to CreateRoutine
+    navigation.navigate({
+      name: 'CreateRoutine',
+      params: {
+        newExercise: exercise,
+        editIndex: route.params?.isEditing ? route.params?.exerciseIndex : undefined,
+      },
+      merge: true, // Merge params with existing screen
+    });
   };
 
   return (
@@ -65,7 +133,7 @@ export default function AddExerciseScreen({ navigation }) {
           className="text-xl font-bold flex-1"
           style={{ color: colors.text.primary }}
         >
-          Añadir Ejercicio
+          {isEditing ? 'Editar Ejercicio' : 'Añadir Ejercicio'}
         </Text>
       </View>
 
@@ -299,14 +367,20 @@ export default function AddExerciseScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Botón Añadir a la Rutina */}
+        {/* Botón Añadir/Actualizar */}
         <TouchableOpacity
           onPress={handleAddToRoutine}
+          disabled={!isAddToRoutineEnabled}
           className="rounded-xl p-4 mb-6"
-          style={{ backgroundColor: colors.accent.bright || colors.accent.primary }}
+          style={{ 
+            backgroundColor: isAddToRoutineEnabled 
+              ? (colors.accent.bright || colors.accent.primary)
+              : colors.disabled || colors.background.tertiary,
+            opacity: isAddToRoutineEnabled ? 1 : 0.5
+          }}
         >
           <Text className="text-white font-semibold text-center text-base">
-            Añadir a la Rutina
+            {isEditing ? 'Actualizar Ejercicio' : 'Añadir a la Rutina'}
           </Text>
         </TouchableOpacity>
       </ScrollView>

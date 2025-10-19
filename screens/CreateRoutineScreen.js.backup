@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,60 +8,30 @@ import { colors, textStyles, inputStyles, buttonStyles, containerStyles } from '
 
 export default function CreateRoutineScreen({ navigation, route }) {
   const { user } = useAuth();
-  const { 
-    addRoutine, 
-    draftRoutine, 
-    updateDraftRoutine,
-    addExerciseToDraft,
-    updateDraftExercise,
-    removeDraftExercise,
-    clearDraftRoutine,
-  } = useRoutines();
-  
-  const processedExerciseRef = useRef(null); // Referencia para evitar procesar dos veces
+  const { addRoutine } = useRoutines();
+  const [routineName, setRoutineName] = useState('');
+  const [description, setDescription] = useState('');
+  const [exercises, setExercises] = useState([]);
 
   useEffect(() => {
     const newExercise = route.params?.newExercise;
     const editIndex = route.params?.editIndex;
-    
-    console.log('CreateRoutine - useEffect triggered');
-    console.log('newExercise:', newExercise);
-    console.log('editIndex:', editIndex);
-    console.log('Current exercises from Context:', draftRoutine.exercises);
-    
-    // Solo procesar si hay un ejercicio nuevo y no lo hemos procesado ya
     if (newExercise) {
-      const exerciseKey = JSON.stringify(newExercise);
-      
-      // Evitar procesar el mismo ejercicio dos veces
-      if (processedExerciseRef.current === exerciseKey) {
-        console.log('Ejercicio ya procesado, saltando...');
-        return;
-      }
-      
-      processedExerciseRef.current = exerciseKey;
-      
       if (typeof editIndex === 'number') {
-        console.log('Editando ejercicio en índice:', editIndex);
-        updateDraftExercise(editIndex, newExercise);
+        setExercises(prev => prev.map((ex, i) => i === editIndex ? newExercise : ex));
       } else {
-        console.log('Agregando nuevo ejercicio');
-        addExerciseToDraft(newExercise);
+        setExercises(prev => [...prev, newExercise]);
       }
-      
-      // Limpiar params después de un breve delay para evitar re-ejecución
-      setTimeout(() => {
-        navigation.setParams({ newExercise: undefined, editIndex: undefined });
-      }, 100);
+      navigation.setParams({ newExercise: undefined, editIndex: undefined });
     }
   }, [route.params?.newExercise, route.params?.editIndex]);
 
   const handleAddExercises = () => navigation.navigate('AddExercise');
-  const handleEditExercise = (index) => navigation.navigate('AddExercise', { exercise: draftRoutine.exercises[index], exerciseIndex: index, isEditing: true });
-  const handleRemoveExercise = (index) => removeDraftExercise(index);
+  const handleEditExercise = (index) => navigation.navigate('AddExercise', { exercise: exercises[index], exerciseIndex: index, isEditing: true });
+  const handleRemoveExercise = (index) => setExercises(prev => prev.filter((_, i) => i !== index));
 
-  const hasRoutineName = draftRoutine.name.trim() !== '';
-  const hasExercises = draftRoutine.exercises.length > 0;
+  const hasRoutineName = routineName.trim() !== '';
+  const hasExercises = exercises.length > 0;
   const isCreateRoutineEnabled = hasRoutineName && hasExercises;
 
   const handleCreateRoutine = () => {
@@ -69,10 +39,10 @@ export default function CreateRoutineScreen({ navigation, route }) {
     
     // Crear objeto de rutina
     const newRoutine = {
-      id: Date.now().toString(),
-      name: draftRoutine.name.trim(),
-      description: draftRoutine.description.trim(),
-      exercises: draftRoutine.exercises,
+      id: Date.now().toString(), // ID único basado en timestamp
+      name: routineName.trim(),
+      description: description.trim(),
+      exercises: exercises,
       createdAt: new Date().toISOString(),
     };
     
@@ -81,9 +51,10 @@ export default function CreateRoutineScreen({ navigation, route }) {
     
     console.log('Rutina creada:', newRoutine);
     
-    // Limpiar borrador y referencia
-    clearDraftRoutine();
-    processedExerciseRef.current = null;
+    // Limpiar formulario
+    setRoutineName('');
+    setDescription('');
+    setExercises([]);
     
     // Navegar de vuelta a RoutinesList
     navigation.navigate('RoutinesList');
@@ -107,8 +78,8 @@ export default function CreateRoutineScreen({ navigation, route }) {
           <View className={inputStyles.base.container}>
             <Text className="text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>Nombre de la rutina</Text>
             <TextInput
-              value={draftRoutine.name}
-              onChangeText={(text) => updateDraftRoutine({ name: text })}
+              value={routineName}
+              onChangeText={setRoutineName}
               placeholder="Ej: Rutina de Fuerza"
               placeholderTextColor={colors.text.secondary}
               className={inputStyles.base.input}
@@ -119,8 +90,8 @@ export default function CreateRoutineScreen({ navigation, route }) {
           <View className={inputStyles.textarea.container}>
             <Text className="text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>Descripción</Text>
             <TextInput
-              value={draftRoutine.description}
-              onChangeText={(text) => updateDraftRoutine({ description: text })}
+              value={description}
+              onChangeText={setDescription}
               placeholder="Describe tu rutina..."
               placeholderTextColor={colors.text.secondary}
               multiline
@@ -134,16 +105,16 @@ export default function CreateRoutineScreen({ navigation, route }) {
           <View className="mb-6">
             <View className="flex-row items-center justify-between mb-4">
               <Text className={textStyles.h4}>Ejercicios</Text>
-              {draftRoutine.exercises.length > 0 && (
+              {exercises.length > 0 && (
                 <View className="px-3 py-1 rounded-full" style={{ backgroundColor: colors.accent.bright || colors.accent.primary }}>
-                  <Text className="text-white text-sm font-semibold">{draftRoutine.exercises.length}</Text>
+                  <Text className="text-white text-sm font-semibold">{exercises.length}</Text>
                 </View>
               )}
             </View>
 
-            {draftRoutine.exercises.length > 0 && (
+            {exercises.length > 0 && (
               <View className="mb-4">
-                {draftRoutine.exercises.map((exercise, index) => (
+                {exercises.map((exercise, index) => (
                   <TouchableOpacity
                     key={index}
                     onPress={() => handleEditExercise(index)}
@@ -186,7 +157,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
               </View>
               <Text className="text-base font-semibold mb-1" style={{ color: colors.text.primary }}>Añadir Ejercicios</Text>
               <Text className="text-sm text-center" style={{ color: colors.text.secondary }}>
-                {draftRoutine.exercises.length === 0 ? 'Comienza a construir tu rutina añadiendo ejercicios.' : `Tienes ${draftRoutine.exercises.length} ejercicio${draftRoutine.exercises.length > 1 ? 's' : ''} añadido${draftRoutine.exercises.length > 1 ? 's' : ''}. Añade más.`}
+                {exercises.length === 0 ? 'Comienza a construir tu rutina añadiendo ejercicios.' : `Tienes ${exercises.length} ejercicio${exercises.length > 1 ? 's' : ''} añadido${exercises.length > 1 ? 's' : ''}. Añade más.`}
               </Text>
             </TouchableOpacity>
           </View>
