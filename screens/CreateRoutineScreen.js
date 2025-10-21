@@ -10,15 +10,30 @@ export default function CreateRoutineScreen({ navigation, route }) {
   const { user } = useAuth();
   const { 
     addRoutine, 
+    updateRoutine,
     draftRoutine, 
     updateDraftRoutine,
     addExerciseToDraft,
     updateDraftExercise,
     removeDraftExercise,
     clearDraftRoutine,
+    loadRoutineForEditing,
   } = useRoutines();
   
   const processedExerciseRef = useRef(null); // Referencia para evitar procesar dos veces
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  // Cargar rutina para editar si viene en los parámetros
+  useEffect(() => {
+    const routineToEdit = route.params?.routineToEdit;
+    if (routineToEdit) {
+      console.log('Cargando rutina para editar:', routineToEdit);
+      loadRoutineForEditing(routineToEdit);
+      setIsEditMode(true);
+      // Limpiar el parámetro
+      navigation.setParams({ routineToEdit: undefined });
+    }
+  }, [route.params?.routineToEdit]);
 
   useEffect(() => {
     const newExercise = route.params?.newExercise;
@@ -67,23 +82,35 @@ export default function CreateRoutineScreen({ navigation, route }) {
   const handleCreateRoutine = () => {
     if (!isCreateRoutineEnabled) return;
     
-    // Crear objeto de rutina
-    const newRoutine = {
-      id: Date.now().toString(),
-      name: draftRoutine.name.trim(),
-      description: draftRoutine.description.trim(),
-      exercises: draftRoutine.exercises,
-      createdAt: new Date().toISOString(),
-    };
-    
-    // Agregar rutina al contexto
-    addRoutine(newRoutine);
-    
-    console.log('Rutina creada:', newRoutine);
+    if (isEditMode && draftRoutine.id) {
+      // Actualizar rutina existente
+      const updatedRoutine = {
+        ...draftRoutine,
+        name: draftRoutine.name.trim(),
+        description: draftRoutine.description.trim(),
+        updatedAt: new Date().toISOString(),
+      };
+      
+      updateRoutine(draftRoutine.id, updatedRoutine);
+      console.log('Rutina actualizada:', updatedRoutine);
+    } else {
+      // Crear nueva rutina
+      const newRoutine = {
+        id: Date.now().toString(),
+        name: draftRoutine.name.trim(),
+        description: draftRoutine.description.trim(),
+        exercises: draftRoutine.exercises,
+        createdAt: new Date().toISOString(),
+      };
+      
+      addRoutine(newRoutine);
+      console.log('Rutina creada:', newRoutine);
+    }
     
     // Limpiar borrador y referencia
     clearDraftRoutine();
     processedExerciseRef.current = null;
+    setIsEditMode(false);
     
     // Navegar de vuelta a RoutinesList
     navigation.navigate('RoutinesList');
@@ -96,12 +123,16 @@ export default function CreateRoutineScreen({ navigation, route }) {
           {/* Header con botón atrás */}
           <View className="flex-row items-center mb-6">
             <TouchableOpacity
-              onPress={() => navigation.navigate('RoutinesList')}
+              onPress={() => {
+                clearDraftRoutine();
+                setIsEditMode(false);
+                navigation.navigate('RoutinesList');
+              }}
               className="mr-4 -ml-2"
             >
               <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
             </TouchableOpacity>
-            <Text className={textStyles.h2}>Nueva Rutina</Text>
+            <Text className={textStyles.h2}>{isEditMode ? 'Editar Rutina' : 'Nueva Rutina'}</Text>
           </View>
 
           <View className={inputStyles.base.container}>
@@ -197,7 +228,9 @@ export default function CreateRoutineScreen({ navigation, route }) {
             className="rounded-xl p-4 mb-6"
             style={{ backgroundColor: isCreateRoutineEnabled ? (colors.accent.bright || colors.accent.primary) : colors.disabled || colors.background.tertiary, opacity: isCreateRoutineEnabled ? 1 : 0.5 }}
           >
-            <Text className="text-white font-semibold text-center text-base">Crear Rutina</Text>
+            <Text className="text-white font-semibold text-center text-base">
+              {isEditMode ? 'Guardar Cambios' : 'Crear Rutina'}
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       ) : (

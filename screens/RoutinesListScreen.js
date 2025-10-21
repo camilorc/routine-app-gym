@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Alert, Modal, Pressable, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, textStyles, containerStyles } from '../styles';
@@ -7,19 +7,160 @@ import { useRoutines } from '../contexts/RoutinesContext';
 
 export default function RoutinesListScreen({ navigation, route }) {
   // Obtener rutinas del contexto
-  const { routines } = useRoutines();
+  const { routines, deleteRoutine } = useRoutines();
+  const [selectedRoutine, setSelectedRoutine] = useState(null);
+  const [overlayOpacity] = useState(new Animated.Value(0));
 
   const handleCreateRoutine = () => {
     navigation.navigate('CreateRoutine');
   };
 
   const handleRoutinePress = (routine) => {
-    console.log('Rutina seleccionada:', routine);
-    // Aquí navegarías a la pantalla de detalle/ejecución de rutina
+    console.log('Editando rutina:', routine);
+    navigation.navigate('CreateRoutine', { routineToEdit: routine });
   };
+
+  const handleDeleteRoutine = (routine) => {
+    setSelectedRoutine(null);
+    
+    Alert.alert(
+      '¿Eliminar rutina?',
+      `¿Estás seguro de que quieres eliminar "${routine.name}"? Esta acción no se puede deshacer.`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: () => {
+            deleteRoutine(routine.id);
+            console.log('Rutina eliminada:', routine.id);
+          }
+        }
+      ]
+    );
+  };
+
+  const openMenu = (routine) => {
+    setSelectedRoutine(routine);
+  };
+
+  const closeMenu = () => {
+    Animated.timing(overlayOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setSelectedRoutine(null);
+    });
+  };
+
+  // Animar el overlay cuando se abre el modal
+  useEffect(() => {
+    if (selectedRoutine) {
+      Animated.timing(overlayOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [selectedRoutine]);
 
   return (
     <SafeAreaView className={containerStyles.screen} style={{ backgroundColor: colors.background.primary }}>
+      {/* Modal de menú */}
+      <Modal
+        visible={selectedRoutine !== null}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeMenu}
+      >
+        <Animated.View 
+          className="flex-1 justify-end"
+          style={{ 
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            opacity: overlayOpacity 
+          }}
+        >
+          <Pressable 
+            className="flex-1"
+            onPress={closeMenu}
+          />
+          <Pressable
+            className="rounded-t-3xl p-6"
+            style={{ backgroundColor: colors.background.primary }}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {selectedRoutine && (
+              <>
+                <View className="items-center mb-4">
+                  <View 
+                    className="w-12 h-1 rounded-full mb-4"
+                    style={{ backgroundColor: colors.border.light }}
+                  />
+                  <Text className="text-lg font-bold" style={{ color: colors.text.primary }}>
+                    {selectedRoutine.name}
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    const routine = selectedRoutine;
+                    closeMenu();
+                    // Dar tiempo para que el modal se cierre antes de navegar
+                    setTimeout(() => {
+                      handleRoutinePress(routine);
+                    }, 300);
+                  }}
+                  className="flex-row items-center p-4 rounded-xl mb-2"
+                  style={{ backgroundColor: colors.background.secondary }}
+                >
+                  <View 
+                    className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                    style={{ backgroundColor: colors.background.tertiary }}
+                  >
+                    <Ionicons name="create-outline" size={20} color={colors.accent.primary} />
+                  </View>
+                  <Text className="text-base font-medium flex-1" style={{ color: colors.text.primary }}>
+                    Editar rutina
+                  </Text>
+                  <Ionicons name="chevron-forward" size={20} color={colors.text.tertiary} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => handleDeleteRoutine(selectedRoutine)}
+                  className="flex-row items-center p-4 rounded-xl"
+                  style={{ backgroundColor: colors.background.secondary }}
+                >
+                  <View 
+                    className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                    style={{ backgroundColor: '#FEE2E2' }}
+                  >
+                    <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                  </View>
+                  <Text className="text-base font-medium flex-1" style={{ color: '#EF4444' }}>
+                    Eliminar rutina
+                  </Text>
+                  <Ionicons name="chevron-forward" size={20} color="#EF4444" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={closeMenu}
+                  className="mt-4 p-4 rounded-xl items-center"
+                  style={{ backgroundColor: colors.background.secondary }}
+                >
+                  <Text className="text-base font-semibold" style={{ color: colors.text.secondary }}>
+                    Cancelar
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </Pressable>
+        </Animated.View>
+      </Modal>
+
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 py-4">
         <Text className="text-2xl font-bold" style={{ color: colors.text.primary }}>
@@ -72,10 +213,8 @@ export default function RoutinesListScreen({ navigation, route }) {
             }, 0);
 
             return (
-              <TouchableOpacity
+              <View
                 key={routine.id}
-                onPress={() => handleRoutinePress(routine)}
-                activeOpacity={0.7}
                 className="rounded-2xl p-4 mb-4 flex-row items-center"
                 style={{ backgroundColor: colors.background.secondary }}
               >
@@ -120,20 +259,27 @@ export default function RoutinesListScreen({ navigation, route }) {
                 {/* Botón de play y menú */}
                 <View className="flex-row items-center ml-2">
                   <TouchableOpacity
-                    onPress={() => handleRoutinePress(routine)}
+                    onPress={() => {
+                      console.log('Play rutina:', routine.name);
+                      // TODO: Implementar funcionalidad para iniciar rutina
+                    }}
                     className="w-10 h-10 rounded-full items-center justify-center mr-2"
                     style={{ backgroundColor: colors.accent.bright || colors.accent.primary }}
                   >
                     <Ionicons name="play" size={20} color={colors.background.primary} />
                   </TouchableOpacity>
+                  
                   <TouchableOpacity
-                    onPress={() => console.log('Menú de rutina:', routine.id)}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      openMenu(routine);
+                    }}
                     className="w-10 h-10 items-center justify-center"
                   >
                     <Ionicons name="ellipsis-vertical" size={20} color={colors.text.secondary} />
                   </TouchableOpacity>
                 </View>
-              </TouchableOpacity>
+              </View>
             );
           })}
         </ScrollView>

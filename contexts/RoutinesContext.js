@@ -58,6 +58,15 @@ export function RoutinesProvider({ children }) {
     });
   };
 
+  const loadRoutineForEditing = (routine) => {
+    setDraftRoutine({
+      id: routine.id,
+      name: routine.name,
+      description: routine.description,
+      exercises: [...routine.exercises],
+    });
+  };
+
   const clearAllData = () => {
     setRoutines([]);
     setDraftRoutine({
@@ -79,6 +88,7 @@ export function RoutinesProvider({ children }) {
       updateDraftExercise,
       removeDraftExercise,
       clearDraftRoutine,
+      loadRoutineForEditing,
       clearAllData,
     }}>
       {children}
