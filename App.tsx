@@ -18,6 +18,7 @@ import { AuthContainer } from './screens/auth';
 import RoutinesListScreen from './screens/RoutinesListScreen';
 import CreateRoutineScreen from './screens/CreateRoutineScreen';
 import AddExerciseScreen from './screens/AddExerciseScreen';
+import ExercisesScreen from './screens/ExercisesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -51,16 +52,10 @@ function TabNavigator() {
 
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Exercises') {
+            iconName = focused ? 'barbell' : 'barbell-outline';
           } else if (route.name === 'Create') {
-            // Botón especial para crear rutina
-            return (
-              <View 
-                className="w-8 h-8 rounded-md items-center justify-center"
-                style={{ backgroundColor: colors.accent.bright || colors.accent.primary }}
-              >
-                <Ionicons name="add" size={16} color={colors.background.primary} />
-              </View>
-            );
+            iconName = focused ? 'clipboard' : 'clipboard-outline';
           } else if (route.name === 'Account') {
             iconName = focused ? 'person' : 'person-outline';
           }
@@ -88,6 +83,11 @@ function TabNavigator() {
         name="Home" 
         component={HomeScreen}
         options={{ tabBarLabel: 'Inicio' }}
+      />
+      <Tab.Screen 
+        name="Exercises" 
+        component={ExercisesScreen}
+        options={{ tabBarLabel: 'Ejercicios' }}
       />
       <Tab.Screen 
         name="Create" 
@@ -126,7 +126,7 @@ export default function App() {
         <RoutinesProvider>
           <NavigationContainer>
             <RootStack />
-            <StatusBar style="dark" backgroundColor={colors.background.primary} />
+            <StatusBar style="light" backgroundColor={colors.background.primary} />
           </NavigationContainer>
         </RoutinesProvider>
       </AuthProvider>

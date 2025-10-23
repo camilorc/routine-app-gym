@@ -1,21 +1,23 @@
 /**
  * Archivo de índice para exportar todos los estilos centralizados
  * 
- * Por defecto exporta el tema OSCURO (styleDark)
+ * Por defecto exporta el tema STRONGO DARK
  * 
  * Para cambiar entre temas, comenta/descomenta las líneas correspondientes:
- * - styleDark: Tema oscuro (ACTIVO)
- * - styleLight: Tema claro (comentado)
+ * - styleStrongDark: Tema oscuro con colores Strongo (ACTIVO)
+ * - styleDark: Tema oscuro verde
+ * - styleLight: Tema claro
  * 
  * Estructura:
- * - styleDark/: Estilos del tema oscuro
+ * - styleStrongDark/: Estilos del tema Strongo (naranja y azul)
+ * - styleDark/: Estilos del tema oscuro verde
  * - styleLight/: Estilos del tema claro
  */
 
 // ========================================
-// TEMA CLARO (ACTIVO)
+// TEMA STRONGO DARK (ACTIVO)
 // ========================================
-export { colors, legacyColors } from './styleLight/colors';
+export { colors, legacyColors } from './styleStrongDark/colors';
 export {
   textStyles,
   buttonStyles,
@@ -27,10 +29,27 @@ export {
   badgeStyles,
   tabStyles,
   combineStyles,
-} from './styleLight/commonStyles';
+} from './styleStrongDark/commonStyles';
 
 // ========================================
-// TEMA OSCURO (DESACTIVADO)
+// TEMA CLARO (DESACTIVADO)
+// ========================================
+// export { colors, legacyColors } from './styleLight/colors';
+// export {
+//   textStyles,
+//   buttonStyles,
+//   inputStyles,
+//   containerStyles,
+//   borderStyles,
+//   spacingStyles,
+//   iconStyles,
+//   badgeStyles,
+//   tabStyles,
+//   combineStyles,
+// } from './styleLight/commonStyles';
+
+// ========================================
+// TEMA OSCURO VERDE (DESACTIVADO)
 // ========================================
 // export { colors, legacyColors } from './styleDark/colors';
 // export {

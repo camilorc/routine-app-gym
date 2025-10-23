@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Modal, Animated, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../styles';
@@ -19,6 +19,14 @@ export default function AddExerciseScreen({ navigation, route }) {
   ]);
   const [restMinutes, setRestMinutes] = useState('');
   const [restSeconds, setRestSeconds] = useState('');
+  
+  // Estados para el modal de crear ejercicio
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalExerciseName, setModalExerciseName] = useState('');
+  const [modalMuscleGroup, setModalMuscleGroup] = useState('');
+  const [modalEquipment, setModalEquipment] = useState('');
+  const [modalNotes, setModalNotes] = useState('');
+  const [overlayOpacity] = useState(new Animated.Value(0));
 
   // Cargar datos del ejercicio si está en modo edición
   useEffect(() => {
@@ -44,6 +52,57 @@ export default function AddExerciseScreen({ navigation, route }) {
       }
     }
   }, [isEditing, exerciseToEdit]);
+
+  // Animar overlay cuando se abre/cierra el modal
+  useEffect(() => {
+    if (isModalVisible) {
+      Animated.timing(overlayOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isModalVisible]);
+
+  const openModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    Animated.timing(overlayOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setIsModalVisible(false);
+      // Limpiar campos del modal
+      setModalExerciseName('');
+      setModalMuscleGroup('');
+      setModalEquipment('');
+      setModalNotes('');
+    });
+  };
+
+  const handleSaveNewExercise = () => {
+    if (modalExerciseName.trim() === '') {
+      return;
+    }
+    
+    // Guardar el ejercicio creado
+    setExerciseName(modalExerciseName.trim());
+    
+    // Opcionalmente, guardar descripción con los detalles
+    const detailsArray = [];
+    if (modalMuscleGroup.trim()) detailsArray.push(`Grupo muscular: ${modalMuscleGroup}`);
+    if (modalEquipment.trim()) detailsArray.push(`Equipo: ${modalEquipment}`);
+    if (modalNotes.trim()) detailsArray.push(modalNotes);
+    
+    if (detailsArray.length > 0) {
+      setDescription(detailsArray.join('\n'));
+    }
+    
+    closeModal();
+  };
 
   const addSeries = () => {
     const newSeries = {
@@ -157,31 +216,38 @@ export default function AddExerciseScreen({ navigation, route }) {
         </View>
 
         {/* O crear un nuevo ejercicio */}
-        <TouchableOpacity className="mb-6">
+        <TouchableOpacity 
+          onPress={openModal}
+          className="mb-6 rounded-xl p-4 border-2 border-dashed flex-row items-center justify-center"
+          style={{ borderColor: colors.border.light }}
+        >
+          <Ionicons name="add-circle-outline" size={24} color={colors.accent.primary} />
           <Text 
-            className="text-center text-sm"
-            style={{ color: colors.text.secondary }}
+            className="text-base font-semibold ml-2"
+            style={{ color: colors.accent.primary }}
           >
-            O crea un nuevo ejercicio.
+            Crear nuevo ejercicio
           </Text>
         </TouchableOpacity>
 
-        {/* Nombre del ejercicio */}
-        <View className="mb-4">
-          <TextInput
-            value={exerciseName}
-            onChangeText={setExerciseName}
-            placeholder="Nombre del ejercicio"
-            placeholderTextColor={colors.text.secondary}
-            className="text-xl font-bold rounded-xl px-4 py-3"
-            style={{ 
-              backgroundColor: colors.background.secondary, 
-              color: colors.text.primary,
-              borderColor: colors.border.light,
-              borderWidth: 1
-            }}
-          />
-        </View>
+        {/* Nombre del ejercicio seleccionado */}
+        {exerciseName ? (
+          <View className="mb-4">
+            <TextInput
+              value={exerciseName}
+              onChangeText={setExerciseName}
+              placeholder="Nombre del ejercicio"
+              placeholderTextColor={colors.text.secondary}
+              className="text-xl font-bold rounded-xl px-4 py-3"
+              style={{ 
+                backgroundColor: colors.background.secondary, 
+                color: colors.text.primary,
+                borderColor: colors.border.light,
+                borderWidth: 1
+              }}
+            />
+          </View>
+        ) : null}
 
         {/* Descripción del ejercicio */}
         <View className="mb-6">
@@ -379,11 +445,170 @@ export default function AddExerciseScreen({ navigation, route }) {
             opacity: isAddToRoutineEnabled ? 1 : 0.5
           }}
         >
-          <Text className="text-white font-semibold text-center text-base">
+          <Text className="font-semibold text-center text-base" style={{ color: colors.background.primary }}>
             {isEditing ? 'Actualizar Ejercicio' : 'Añadir a la Rutina'}
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Modal para crear nuevo ejercicio */}
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeModal}
+      >
+        <View className="flex-1">
+          <Animated.View 
+            className="absolute inset-0"
+            style={{ 
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              opacity: overlayOpacity 
+            }}
+          >
+            <Pressable 
+              className="flex-1"
+              onPress={closeModal}
+            />
+          </Animated.View>
+          
+          <View
+            className="rounded-b-3xl flex-1"
+            style={{ 
+              backgroundColor: colors.background.primary,
+              marginTop: 50
+            }}
+          >
+            {/* Header del modal con X */}
+            <View className="flex-row items-center justify-between px-6 pt-6 pb-4 border-b" style={{ borderColor: colors.border.light }}>
+              <Text className="text-xl font-bold flex-1" style={{ color: colors.text.primary }}>
+                Nuevo Ejercicio
+              </Text>
+              <TouchableOpacity
+                onPress={closeModal}
+                className="w-10 h-10 items-center justify-center rounded-full"
+                style={{ backgroundColor: colors.background.secondary }}
+              >
+                <Ionicons name="close" size={24} color={colors.text.primary} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView className="px-6 flex-1" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              {/* Nombre del ejercicio */}
+              <View className="mb-4 mt-6">
+                <Text 
+                  className="text-sm mb-2 font-medium"
+                  style={{ color: colors.text.secondary }}
+                >
+                  Nombre del ejercicio *
+                </Text>
+                <TextInput
+                  value={modalExerciseName}
+                  onChangeText={setModalExerciseName}
+                  placeholder="Ej: Press de banca"
+                  placeholderTextColor={colors.text.secondary}
+                  className="rounded-xl px-4 py-3 text-base"
+                  style={{ 
+                    backgroundColor: colors.background.secondary, 
+                    color: colors.text.primary,
+                    borderColor: colors.border.light,
+                    borderWidth: 1
+                  }}
+                />
+              </View>
+
+              {/* Grupo muscular */}
+              <View className="mb-4">
+                <Text 
+                  className="text-sm mb-2 font-medium"
+                  style={{ color: colors.text.secondary }}
+                >
+                  Grupo muscular
+                </Text>
+                <TextInput
+                  value={modalMuscleGroup}
+                  onChangeText={setModalMuscleGroup}
+                  placeholder="Ej: Pecho, Espalda, Piernas..."
+                  placeholderTextColor={colors.text.secondary}
+                  className="rounded-xl px-4 py-3 text-base"
+                  style={{ 
+                    backgroundColor: colors.background.secondary, 
+                    color: colors.text.primary,
+                    borderColor: colors.border.light,
+                    borderWidth: 1
+                  }}
+                />
+              </View>
+
+              {/* Equipo */}
+              <View className="mb-4">
+                <Text 
+                  className="text-sm mb-2 font-medium"
+                  style={{ color: colors.text.secondary }}
+                >
+                  Equipo
+                </Text>
+                <TextInput
+                  value={modalEquipment}
+                  onChangeText={setModalEquipment}
+                  placeholder="Ej: Barra, Mancuernas, Máquina..."
+                  placeholderTextColor={colors.text.secondary}
+                  className="rounded-xl px-4 py-3 text-base"
+                  style={{ 
+                    backgroundColor: colors.background.secondary, 
+                    color: colors.text.primary,
+                    borderColor: colors.border.light,
+                    borderWidth: 1
+                  }}
+                />
+              </View>
+
+              {/* Notas */}
+              <View className="mb-4">
+                <Text 
+                  className="text-sm mb-2 font-medium"
+                  style={{ color: colors.text.secondary }}
+                >
+                  Notas (opcional)
+                </Text>
+                <TextInput
+                  value={modalNotes}
+                  onChangeText={setModalNotes}
+                  placeholder="Agrega notas sobre técnica, consejos..."
+                  placeholderTextColor={colors.text.secondary}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                  className="rounded-xl px-4 py-3 text-base h-24"
+                  style={{ 
+                    backgroundColor: colors.background.secondary, 
+                    color: colors.text.primary,
+                    borderColor: colors.border.light,
+                    borderWidth: 1
+                  }}
+                />
+              </View>
+
+              {/* Botón Guardar */}
+              <TouchableOpacity
+                onPress={handleSaveNewExercise}
+                disabled={modalExerciseName.trim() === ''}
+                className="rounded-xl p-4 mb-6"
+                style={{ 
+                  backgroundColor: modalExerciseName.trim() !== ''
+                    ? (colors.accent.bright || colors.accent.primary)
+                    : colors.disabled || colors.background.tertiary,
+                  opacity: modalExerciseName.trim() !== '' ? 1 : 0.5
+                }}
+              >
+                <Text className="font-semibold text-center text-base" style={{ color: colors.background.primary }}>
+                  Guardar Ejercicio
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

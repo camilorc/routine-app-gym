@@ -56,7 +56,7 @@ export default function ProfileScreen() {
             <View className="w-20 h-20 rounded-full items-center justify-center mb-4" style={{ backgroundColor: colors.background.secondary }}>
               <Ionicons name="person" size={32} color={colors.text.primary} />
             </View>
-            <Text className={`${textStyles.h2} text-center`}>
+            <Text className={`${textStyles.h2} text-center`} style={{ color: colors.text.primary }}>
               Mi Cuenta
             </Text>
           </View>
@@ -119,8 +119,8 @@ export default function ProfileScreen() {
             className="rounded-xl p-4 flex-row items-center justify-center"
             style={{ backgroundColor: colors.accent.bright || colors.accent.primary }}
           >
-            <Ionicons name="log-out-outline" size={20} color="white" />
-            <Text className="text-white font-semibold text-center text-base ml-2">
+            <Ionicons name="log-out-outline" size={20} color={colors.background.primary} />
+            <Text className="font-semibold text-center text-base ml-2" style={{ color: colors.background.primary }}>
               Cerrar Sesión
             </Text>
           </TouchableOpacity>

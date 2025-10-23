@@ -132,7 +132,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
             >
               <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
             </TouchableOpacity>
-            <Text className={textStyles.h2}>{isEditMode ? 'Editar Rutina' : 'Nueva Rutina'}</Text>
+            <Text className={textStyles.h2} style={{ color: colors.text.primary }}>{isEditMode ? 'Editar Rutina' : 'Nueva Rutina'}</Text>
           </View>
 
           <View className={inputStyles.base.container}>
@@ -164,10 +164,10 @@ export default function CreateRoutineScreen({ navigation, route }) {
 
           <View className="mb-6">
             <View className="flex-row items-center justify-between mb-4">
-              <Text className={textStyles.h4}>Ejercicios</Text>
+              <Text className={textStyles.h4} style={{ color: colors.text.primary }}>Ejercicios</Text>
               {draftRoutine.exercises.length > 0 && (
                 <View className="px-3 py-1 rounded-full" style={{ backgroundColor: colors.accent.bright || colors.accent.primary }}>
-                  <Text className="text-white text-sm font-semibold">{draftRoutine.exercises.length}</Text>
+                  <Text className="text-sm font-semibold" style={{ color: colors.background.primary }}>{draftRoutine.exercises.length}</Text>
                 </View>
               )}
             </View>
@@ -228,7 +228,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
             className="rounded-xl p-4 mb-6"
             style={{ backgroundColor: isCreateRoutineEnabled ? (colors.accent.bright || colors.accent.primary) : colors.disabled || colors.background.tertiary, opacity: isCreateRoutineEnabled ? 1 : 0.5 }}
           >
-            <Text className="text-white font-semibold text-center text-base">
+            <Text className="font-semibold text-center text-base" style={{ color: colors.background.primary }}>
               {isEditMode ? 'Guardar Cambios' : 'Crear Rutina'}
             </Text>
           </TouchableOpacity>
@@ -239,7 +239,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
             <View className="w-20 h-20 rounded-full items-center justify-center mb-4" style={{ backgroundColor: colors.background.tertiary }}>
               <Ionicons name="lock-closed" size={40} color={colors.text.tertiary} />
             </View>
-            <Text className={`text-2xl font-bold text-center mb-2 ${textStyles.h2}`}>Funcionalidad Exclusiva</Text>
+            <Text className="text-2xl font-bold text-center mb-2" style={{ color: colors.text.primary }}>Funcionalidad Exclusiva</Text>
             <Text className="text-lg text-center leading-6 mb-6" style={{ color: colors.text.secondary }}>Para crear rutinas necesitas una cuenta</Text>
           </View>
 
