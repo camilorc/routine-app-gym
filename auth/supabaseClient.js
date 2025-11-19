@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // IMPORTANTE: Reemplaza estos valores con tus credenciales de Supabase
 // Obtén estos valores desde tu dashboard de Supabase: https://app.supabase.com/
@@ -15,7 +16,14 @@ const isConfigured = supabaseUrl &&
 let supabase = null;
 
 if (isConfigured) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
+  supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
+  });
 } else {
   console.warn('⚠️ Supabase credentials not configured. Please run "npm run setup"');
 }
