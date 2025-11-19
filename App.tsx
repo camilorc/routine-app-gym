@@ -18,7 +18,6 @@ import { AuthContainer } from './screens/auth';
 import RoutinesListScreen from './screens/RoutinesListScreen';
 import CreateRoutineScreen from './screens/CreateRoutineScreen';
 import AddExerciseScreen from './screens/AddExerciseScreen';
-import ExercisesScreen from './screens/ExercisesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -52,8 +51,6 @@ function TabNavigator() {
 
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Exercises') {
-            iconName = focused ? 'barbell' : 'barbell-outline';
           } else if (route.name === 'Create') {
             iconName = focused ? 'clipboard' : 'clipboard-outline';
           } else if (route.name === 'Account') {
@@ -83,11 +80,6 @@ function TabNavigator() {
         name="Home" 
         component={HomeScreen}
         options={{ tabBarLabel: 'Inicio' }}
-      />
-      <Tab.Screen 
-        name="Exercises" 
-        component={ExercisesScreen}
-        options={{ tabBarLabel: 'Ejercicios' }}
       />
       <Tab.Screen 
         name="Create" 

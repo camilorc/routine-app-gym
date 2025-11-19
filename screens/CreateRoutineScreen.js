@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../auth/AuthContext';
@@ -73,13 +73,32 @@ export default function CreateRoutineScreen({ navigation, route }) {
 
   const handleAddExercises = () => navigation.navigate('AddExercise');
   const handleEditExercise = (index) => navigation.navigate('AddExercise', { exercise: draftRoutine.exercises[index], exerciseIndex: index, isEditing: true });
-  const handleRemoveExercise = (index) => removeDraftExercise(index);
+  const handleRemoveExercise = (index) => {
+    const exerciseName = draftRoutine.exercises[index]?.name || 'este ejercicio';
+    
+    Alert.alert(
+      'Eliminar ejercicio',
+      `¿Estás seguro de que quieres eliminar "${exerciseName}"?`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: () => removeDraftExercise(index)
+        }
+      ],
+      { cancelable: true }
+    );
+  };
 
   const hasRoutineName = draftRoutine.name.trim() !== '';
   const hasExercises = draftRoutine.exercises.length > 0;
   const isCreateRoutineEnabled = hasRoutineName && hasExercises;
 
-  const handleCreateRoutine = () => {
+  const handleCreateRoutine = async () => {
     if (!isCreateRoutineEnabled) return;
     
     if (isEditMode && draftRoutine.id) {
@@ -108,7 +127,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
     }
     
     // Limpiar borrador y referencia
-    clearDraftRoutine();
+    await clearDraftRoutine();
     processedExerciseRef.current = null;
     setIsEditMode(false);
     
@@ -123,8 +142,8 @@ export default function CreateRoutineScreen({ navigation, route }) {
           {/* Header con botón atrás */}
           <View className="flex-row items-center mb-6">
             <TouchableOpacity
-              onPress={() => {
-                clearDraftRoutine();
+              onPress={async () => {
+                await clearDraftRoutine();
                 setIsEditMode(false);
                 navigation.navigate('RoutinesList');
               }}

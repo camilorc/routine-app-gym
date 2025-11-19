@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Modal, Animated, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Modal, Animated, Pressable, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../styles';
+import { searchExercises } from '../constants/exercises';
 
 // Función para generar IDs únicos
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -22,11 +23,16 @@ export default function AddExerciseScreen({ navigation, route }) {
   
   // Estados para el modal de crear ejercicio
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditingExercise, setIsEditingExercise] = useState(false);
   const [modalExerciseName, setModalExerciseName] = useState('');
   const [modalMuscleGroup, setModalMuscleGroup] = useState('');
   const [modalEquipment, setModalEquipment] = useState('');
   const [modalNotes, setModalNotes] = useState('');
   const [overlayOpacity] = useState(new Animated.Value(0));
+  
+  // Estados para búsqueda de ejercicios
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   // Cargar datos del ejercicio si está en modo edición
   useEffect(() => {
@@ -64,7 +70,74 @@ export default function AddExerciseScreen({ navigation, route }) {
     }
   }, [isModalVisible]);
 
+  // Buscar ejercicios cuando cambia el query
+  useEffect(() => {
+    if (searchQuery.trim().length >= 2) {
+      const results = searchExercises(searchQuery);
+      setSearchResults(results);
+      setShowSearchResults(results.length > 0);
+    } else {
+      setSearchResults([]);
+      setShowSearchResults(false);
+    }
+  }, [searchQuery]);
+
+  const handleSelectExercise = (exercise) => {
+    // Limpiar el input de búsqueda
+    setSearchQuery('');
+    setExerciseName(exercise.name);
+    
+    // Agregar información del ejercicio a la descripción
+    const details = [];
+    if (exercise.muscleGroup) details.push(`Grupo muscular: ${exercise.muscleGroup}`);
+    if (exercise.equipment) details.push(`Equipo: ${exercise.equipment}`);
+    
+    if (details.length > 0) {
+      setDescription(details.join('\n'));
+    }
+    
+    // Ocultar resultados y limpiar
+    setShowSearchResults(false);
+    setSearchResults([]);
+  };
+
   const openModal = () => {
+    setIsEditingExercise(false);
+    setIsModalVisible(true);
+  };
+
+  const openModalForEdit = () => {
+    setIsEditingExercise(true);
+    
+    // Cargar los datos del ejercicio actual en el modal
+    setModalExerciseName(exerciseName);
+    
+    // Limpiar campos antes de parsear
+    setModalMuscleGroup('');
+    setModalEquipment('');
+    setModalNotes('');
+    
+    // Parsear la descripción para extraer grupo muscular, equipo y notas
+    if (description.trim()) {
+      const descLines = description.split('\n');
+      const notesLines = [];
+      
+      descLines.forEach(line => {
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith('Grupo muscular:')) {
+          setModalMuscleGroup(trimmedLine.replace('Grupo muscular:', '').trim());
+        } else if (trimmedLine.startsWith('Equipo:')) {
+          setModalEquipment(trimmedLine.replace('Equipo:', '').trim());
+        } else if (trimmedLine !== '') {
+          notesLines.push(trimmedLine);
+        }
+      });
+      
+      if (notesLines.length > 0) {
+        setModalNotes(notesLines.join('\n'));
+      }
+    }
+    
     setIsModalVisible(true);
   };
 
@@ -75,6 +148,7 @@ export default function AddExerciseScreen({ navigation, route }) {
       useNativeDriver: true,
     }).start(() => {
       setIsModalVisible(false);
+      setIsEditingExercise(false);
       // Limpiar campos del modal
       setModalExerciseName('');
       setModalMuscleGroup('');
@@ -88,18 +162,17 @@ export default function AddExerciseScreen({ navigation, route }) {
       return;
     }
     
-    // Guardar el ejercicio creado
+    // Guardar el ejercicio creado/editado
     setExerciseName(modalExerciseName.trim());
     
-    // Opcionalmente, guardar descripción con los detalles
+    // Siempre actualizar la descripción con los detalles
     const detailsArray = [];
-    if (modalMuscleGroup.trim()) detailsArray.push(`Grupo muscular: ${modalMuscleGroup}`);
-    if (modalEquipment.trim()) detailsArray.push(`Equipo: ${modalEquipment}`);
-    if (modalNotes.trim()) detailsArray.push(modalNotes);
+    if (modalMuscleGroup.trim()) detailsArray.push(`Grupo muscular: ${modalMuscleGroup.trim()}`);
+    if (modalEquipment.trim()) detailsArray.push(`Equipo: ${modalEquipment.trim()}`);
+    if (modalNotes.trim()) detailsArray.push(modalNotes.trim());
     
-    if (detailsArray.length > 0) {
-      setDescription(detailsArray.join('\n'));
-    }
+    // Actualizar descripción (incluso si está vacía)
+    setDescription(detailsArray.join('\n'));
     
     closeModal();
   };
@@ -212,7 +285,56 @@ export default function AddExerciseScreen({ navigation, route }) {
               className="flex-1 ml-3 text-base"
               style={{ color: colors.text.primary }}
             />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => {
+                setSearchQuery('');
+                setSearchResults([]);
+                setShowSearchResults(false);
+              }}>
+                <Ionicons name="close-circle" size={20} color={colors.text.secondary} />
+              </TouchableOpacity>
+            )}
           </View>
+
+          {/* Resultados de búsqueda */}
+          {showSearchResults && searchResults.length > 0 && (
+            <View 
+              className="mt-2 rounded-xl overflow-hidden"
+              style={{ 
+                backgroundColor: colors.background.secondary,
+                borderColor: colors.border.light,
+                borderWidth: 1
+              }}
+            >
+              {searchResults.map((exercise, index) => (
+                <TouchableOpacity
+                  key={exercise.id}
+                  onPress={() => handleSelectExercise(exercise)}
+                  className="px-4 py-3 flex-row items-center"
+                  style={{
+                    borderBottomWidth: index < searchResults.length - 1 ? 1 : 0,
+                    borderBottomColor: colors.border.light
+                  }}
+                >
+                  <View className="flex-1">
+                    <Text 
+                      className="text-base font-medium mb-1"
+                      style={{ color: colors.text.primary }}
+                    >
+                      {exercise.name}
+                    </Text>
+                    <Text 
+                      className="text-xs"
+                      style={{ color: colors.text.secondary }}
+                    >
+                      {exercise.muscleGroup} • {exercise.equipment}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={colors.text.tertiary} />
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* O crear un nuevo ejercicio */}
@@ -232,21 +354,27 @@ export default function AddExerciseScreen({ navigation, route }) {
 
         {/* Nombre del ejercicio seleccionado */}
         {exerciseName ? (
-          <View className="mb-4">
-            <TextInput
-              value={exerciseName}
-              onChangeText={setExerciseName}
-              placeholder="Nombre del ejercicio"
-              placeholderTextColor={colors.text.secondary}
-              className="text-xl font-bold rounded-xl px-4 py-3"
+          <TouchableOpacity 
+            onPress={openModalForEdit}
+            className="mb-4"
+          >
+            <View 
+              className="text-xl font-bold rounded-xl px-4 py-3 flex-row items-center justify-between"
               style={{ 
                 backgroundColor: colors.background.secondary, 
-                color: colors.text.primary,
                 borderColor: colors.border.light,
                 borderWidth: 1
               }}
-            />
-          </View>
+            >
+              <Text 
+                className="text-xl font-bold flex-1"
+                style={{ color: colors.text.primary }}
+              >
+                {exerciseName}
+              </Text>
+              <Ionicons name="create-outline" size={20} color={colors.accent.primary} />
+            </View>
+          </TouchableOpacity>
         ) : null}
 
         {/* Descripción del ejercicio */}
@@ -482,7 +610,7 @@ export default function AddExerciseScreen({ navigation, route }) {
             {/* Header del modal con X */}
             <View className="flex-row items-center justify-between px-6 pt-6 pb-4 border-b" style={{ borderColor: colors.border.light }}>
               <Text className="text-xl font-bold flex-1" style={{ color: colors.text.primary }}>
-                Nuevo Ejercicio
+                {isEditingExercise ? 'Editar Ejercicio' : 'Nuevo Ejercicio'}
               </Text>
               <TouchableOpacity
                 onPress={closeModal}
@@ -602,7 +730,7 @@ export default function AddExerciseScreen({ navigation, route }) {
                 }}
               >
                 <Text className="font-semibold text-center text-base" style={{ color: colors.background.primary }}>
-                  Guardar Ejercicio
+                  {isEditingExercise ? 'Actualizar Ejercicio' : 'Guardar Ejercicio'}
                 </Text>
               </TouchableOpacity>
             </ScrollView>
