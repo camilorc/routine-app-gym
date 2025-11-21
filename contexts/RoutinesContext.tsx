@@ -1,16 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Routine, DraftRoutine, RoutinesContextType, RoutineExercise } from '../types';
 
-const RoutinesContext = createContext();
+const RoutinesContext = createContext<RoutinesContextType | undefined>(undefined);
 
 const DRAFT_STORAGE_KEY = '@strongo_draft_routine';
 
-export function RoutinesProvider({ children }) {
-  const [routines, setRoutines] = useState([]);
-  const [isLoadingDraft, setIsLoadingDraft] = useState(true);
+interface RoutinesProviderProps {
+  children: ReactNode;
+}
+
+export function RoutinesProvider({ children }: RoutinesProviderProps) {
+  const [routines, setRoutines] = useState<Routine[]>([]);
+  const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(true);
   
   // Estado temporal para la rutina que se está creando
-  const [draftRoutine, setDraftRoutine] = useState({
+  const [draftRoutine, setDraftRoutine] = useState<DraftRoutine>({
     name: '',
     description: '',
     exercises: [],
@@ -53,45 +58,45 @@ export function RoutinesProvider({ children }) {
     }
   };
 
-  const addRoutine = (routine) => {
+  const addRoutine = (routine: Routine): void => {
     setRoutines(prev => [...prev, routine]);
   };
 
-  const updateRoutine = (id, updatedRoutine) => {
+  const updateRoutine = (id: string, updatedRoutine: Routine): void => {
     setRoutines(prev => prev.map(r => r.id === id ? updatedRoutine : r));
   };
 
-  const deleteRoutine = (id) => {
+  const deleteRoutine = (id: string): void => {
     setRoutines(prev => prev.filter(r => r.id !== id));
   };
 
   // Funciones para manejar el borrador de rutina
-  const updateDraftRoutine = (updates) => {
+  const updateDraftRoutine = (updates: Partial<DraftRoutine>): void => {
     setDraftRoutine(prev => ({ ...prev, ...updates }));
   };
 
-  const addExerciseToDraft = (exercise) => {
+  const addExerciseToDraft = (exercise: RoutineExercise): void => {
     setDraftRoutine(prev => ({
       ...prev,
       exercises: [...prev.exercises, exercise],
     }));
   };
 
-  const updateDraftExercise = (index, exercise) => {
+  const updateDraftExercise = (index: number, exercise: RoutineExercise): void => {
     setDraftRoutine(prev => ({
       ...prev,
       exercises: prev.exercises.map((ex, i) => i === index ? exercise : ex),
     }));
   };
 
-  const removeDraftExercise = (index) => {
+  const removeDraftExercise = (index: number): void => {
     setDraftRoutine(prev => ({
       ...prev,
       exercises: prev.exercises.filter((_, i) => i !== index),
     }));
   };
 
-  const clearDraftRoutine = async () => {
+  const clearDraftRoutine = async (): Promise<void> => {
     setDraftRoutine({
       name: '',
       description: '',
@@ -105,7 +110,7 @@ export function RoutinesProvider({ children }) {
     }
   };
 
-  const loadRoutineForEditing = (routine) => {
+  const loadRoutineForEditing = (routine: Routine): void => {
     setDraftRoutine({
       id: routine.id,
       name: routine.name,
@@ -149,7 +154,7 @@ export function RoutinesProvider({ children }) {
   );
 }
 
-export function useRoutines() {
+export function useRoutines(): RoutinesContextType {
   const context = useContext(RoutinesContext);
   if (!context) {
     throw new Error('useRoutines must be used within a RoutinesProvider');

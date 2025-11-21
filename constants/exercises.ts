@@ -1,9 +1,11 @@
+import { Exercise } from '../types';
+
 /**
  * Base de datos de ejercicios predefinidos
  * Esta es una lista temporal para desarrollo que será reemplazada por una base de datos real
  */
 
-export const EXERCISE_DATABASE = [
+export const EXERCISE_DATABASE: Exercise[] = [
   // PECHO
   { id: 1, name: "Press de Banca", muscleGroup: "Pecho", equipment: "Barra" },
   { id: 2, name: "Press Inclinado con Barra", muscleGroup: "Pecho", equipment: "Barra" },
