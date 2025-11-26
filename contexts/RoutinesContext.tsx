@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Routine, DraftRoutine, RoutinesContextType, RoutineExercise } from '../types';
+import { Routine, DraftRoutine, RoutinesContextType, RoutineExercise, Exercise } from '../types';
+import { RoutineService, ExerciseService } from '../services';
+import { useAuth } from '../auth/AuthContext';
 
 const RoutinesContext = createContext<RoutinesContextType | undefined>(undefined);
 
@@ -11,8 +13,13 @@ interface RoutinesProviderProps {
 }
 
 export function RoutinesProvider({ children }: RoutinesProviderProps) {
+  const { user } = useAuth();
   const [routines, setRoutines] = useState<Routine[]>([]);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
   const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(true);
+  const [isLoadingRoutines, setIsLoadingRoutines] = useState<boolean>(false);
+  const [isLoadingExercises, setIsLoadingExercises] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Estado temporal para la rutina que se está creando
   const [draftRoutine, setDraftRoutine] = useState<DraftRoutine>({
@@ -20,6 +27,20 @@ export function RoutinesProvider({ children }: RoutinesProviderProps) {
     description: '',
     exercises: [],
   });
+
+  // Cargar ejercicios globales una sola vez al iniciar
+  useEffect(() => {
+    loadGlobalExercises();
+  }, []);
+
+  // Cargar rutinas del usuario desde Supabase
+  useEffect(() => {
+    if (user?.id) {
+      loadUserRoutines();
+    } else {
+      setRoutines([]);
+    }
+  }, [user?.id]);
 
   // Cargar borrador guardado al iniciar
   useEffect(() => {
@@ -32,6 +53,39 @@ export function RoutinesProvider({ children }: RoutinesProviderProps) {
       saveDraftToStorage();
     }
   }, [draftRoutine, isLoadingDraft]);
+
+  // Cargar ejercicios globales (solo una vez)
+  const loadGlobalExercises = async () => {
+    setIsLoadingExercises(true);
+    try {
+      console.log('📚 [CONTEXT] Cargando ejercicios globales desde Supabase...');
+      const globalExercises = await ExerciseService.getGlobalExercises();
+      console.log('📚 [CONTEXT] Ejercicios cargados:', globalExercises.length);
+      setExercises(globalExercises);
+    } catch (error) {
+      console.error('Error al cargar ejercicios:', error);
+      setExercises([]);
+    } finally {
+      setIsLoadingExercises(false);
+    }
+  };
+
+  // Cargar rutinas del usuario
+  const loadUserRoutines = async () => {
+    if (!user?.id) return;
+    
+    setIsLoadingRoutines(true);
+    setError(null);
+    try {
+      const userRoutines = await RoutineService.getUserRoutines(user.id);
+      setRoutines(userRoutines);
+    } catch (error) {
+      console.error('Error al cargar rutinas:', error);
+      setError('Error al cargar rutinas. Por favor intenta de nuevo.');
+    } finally {
+      setIsLoadingRoutines(false);
+    }
+  };
 
   const loadDraftFromStorage = async () => {
     try {
@@ -58,16 +112,68 @@ export function RoutinesProvider({ children }: RoutinesProviderProps) {
     }
   };
 
-  const addRoutine = (routine: Routine): void => {
-    setRoutines(prev => [...prev, routine]);
+  // Helper para convertir DraftRoutine a Routine completo
+  const draftToRoutine = (draft: DraftRoutine, userId: string): Routine => {
+    const now = new Date().toISOString();
+    return {
+      id: draft.id || Date.now().toString(),
+      user_id: draft.user_id || userId,
+      name: draft.name,
+      description: draft.description || null,
+      exercises: draft.exercises,
+      is_public: draft.is_public || false,
+      is_template: draft.is_template || false,
+      cloned_from_routine_id: null,
+      is_modified: false,
+      created_at: now,
+      updated_at: now,
+    };
   };
 
-  const updateRoutine = (id: string, updatedRoutine: Routine): void => {
-    setRoutines(prev => prev.map(r => r.id === id ? updatedRoutine : r));
+  const addRoutine = async (draft: DraftRoutine): Promise<void> => {
+    if (!user?.id) {
+      throw new Error('Usuario no autenticado');
+    }
+
+    setError(null);
+    try {
+      const newRoutine = await RoutineService.createRoutine(draft, user.id);
+      setRoutines(prev => [...prev, newRoutine]);
+      await clearDraftRoutine();
+    } catch (error) {
+      console.error('Error al crear rutina:', error);
+      setError('Error al crear rutina. Por favor intenta de nuevo.');
+      throw error;
+    }
   };
 
-  const deleteRoutine = (id: string): void => {
-    setRoutines(prev => prev.filter(r => r.id !== id));
+  const updateRoutine = async (id: string, draft: DraftRoutine): Promise<void> => {
+    if (!user?.id) {
+      throw new Error('Usuario no autenticado');
+    }
+
+    setError(null);
+    try {
+      const updatedRoutine = await RoutineService.updateRoutine(id, draft);
+      setRoutines(prev => prev.map(r => r.id === id ? updatedRoutine : r));
+      await clearDraftRoutine();
+    } catch (error) {
+      console.error('Error al actualizar rutina:', error);
+      setError('Error al actualizar rutina. Por favor intenta de nuevo.');
+      throw error;
+    }
+  };
+
+  const deleteRoutine = async (id: string): Promise<void> => {
+    setError(null);
+    try {
+      await RoutineService.deleteRoutine(id);
+      setRoutines(prev => prev.filter(r => r.id !== id));
+    } catch (error) {
+      console.error('Error al eliminar rutina:', error);
+      setError('Error al eliminar rutina. Por favor intenta de nuevo.');
+      throw error;
+    }
   };
 
   // Funciones para manejar el borrador de rutina
@@ -113,9 +219,12 @@ export function RoutinesProvider({ children }: RoutinesProviderProps) {
   const loadRoutineForEditing = (routine: Routine): void => {
     setDraftRoutine({
       id: routine.id,
+      user_id: routine.user_id,
       name: routine.name,
-      description: routine.description,
+      description: routine.description || '',
       exercises: [...routine.exercises],
+      is_public: routine.is_public,
+      is_template: routine.is_template,
     });
   };
 
@@ -136,7 +245,8 @@ export function RoutinesProvider({ children }: RoutinesProviderProps) {
 
   return (
     <RoutinesContext.Provider value={{ 
-      routines, 
+      routines,
+      exercises,
       addRoutine, 
       updateRoutine, 
       deleteRoutine,
@@ -148,6 +258,11 @@ export function RoutinesProvider({ children }: RoutinesProviderProps) {
       clearDraftRoutine,
       loadRoutineForEditing,
       clearAllData,
+      draftToRoutine,
+      isLoadingRoutines,
+      isLoadingExercises,
+      error,
+      refreshRoutines: loadUserRoutines,
     }}>
       {children}
     </RoutinesContext.Provider>

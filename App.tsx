@@ -2,9 +2,9 @@ import "./global.css";
 import React from 'react';
 import { View } from 'react-native';
 import { StatusBar } from "expo-status-bar";
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider } from './auth/AuthContext';
 import { RoutinesProvider } from './contexts/RoutinesContext';
@@ -23,6 +23,17 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const RoutinesStack = createStackNavigator();
 
+// Tema personalizado para evitar fondos blancos en transiciones
+const navigationTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: colors.background.primary,
+    card: colors.background.primary,
+    primary: colors.accent.primary,
+  },
+};
+
 // Stack Navigator para la sección de Rutinas
 function RoutinesStackNavigator() {
   return (
@@ -31,6 +42,10 @@ function RoutinesStackNavigator() {
         headerShown: false,
         presentation: 'card',
         cardStyle: { backgroundColor: colors.background.primary },
+        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        cardOverlayEnabled: false,
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
       }}
     >
       <RoutinesStack.Screen name="RoutinesList" component={RoutinesListScreen} />
@@ -104,6 +119,8 @@ function RootStack() {
         headerShown: false,
         presentation: 'card',
         cardStyle: { backgroundColor: colors.background.primary },
+        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        cardOverlayEnabled: false,
       }}
     >
       <Stack.Screen name="Tabs" component={TabNavigator} />
@@ -116,7 +133,7 @@ export default function App() {
     <SafeAreaProvider>
       <AuthProvider>
         <RoutinesProvider>
-          <NavigationContainer>
+          <NavigationContainer theme={navigationTheme}>
             <RootStack />
             <StatusBar style="light" backgroundColor={colors.background.primary} />
           </NavigationContainer>

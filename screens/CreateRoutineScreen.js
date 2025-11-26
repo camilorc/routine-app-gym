@@ -27,13 +27,22 @@ export default function CreateRoutineScreen({ navigation, route }) {
   useEffect(() => {
     const routineToEdit = route.params?.routineToEdit;
     if (routineToEdit) {
-      console.log('Cargando rutina para editar:', routineToEdit);
+      console.log('📝 [EDIT MODE] Cargando rutina para editar:', routineToEdit);
       loadRoutineForEditing(routineToEdit);
       setIsEditMode(true);
+      console.log('📝 [EDIT MODE] isEditMode establecido a TRUE');
       // Limpiar el parámetro
       navigation.setParams({ routineToEdit: undefined });
     }
   }, [route.params?.routineToEdit]);
+
+  // Detectar si draftRoutine tiene ID para mantener isEditMode
+  useEffect(() => {
+    if (draftRoutine.id && !isEditMode) {
+      console.log('📝 [EDIT MODE] Draft tiene ID, estableciendo isEditMode a TRUE');
+      setIsEditMode(true);
+    }
+  }, [draftRoutine.id]);
 
   useEffect(() => {
     const newExercise = route.params?.newExercise;
@@ -101,6 +110,10 @@ export default function CreateRoutineScreen({ navigation, route }) {
   const handleCreateRoutine = async () => {
     if (!isCreateRoutineEnabled) return;
     
+    console.log('💾 [SAVE ROUTINE] isEditMode:', isEditMode);
+    console.log('💾 [SAVE ROUTINE] draftRoutine.id:', draftRoutine.id);
+    console.log('💾 [SAVE ROUTINE] Condición (isEditMode && draftRoutine.id):', isEditMode && draftRoutine.id);
+    
     if (isEditMode && draftRoutine.id) {
       // Actualizar rutina existente
       const updatedRoutine = {
@@ -111,7 +124,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
       };
       
       updateRoutine(draftRoutine.id, updatedRoutine);
-      console.log('Rutina actualizada:', updatedRoutine);
+      console.log('✅ Rutina actualizada:', updatedRoutine);
     } else {
       // Crear nueva rutina
       const newRoutine = {
@@ -123,7 +136,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
       };
       
       addRoutine(newRoutine);
-      console.log('Rutina creada:', newRoutine);
+      console.log('✅ Rutina creada:', newRoutine);
     }
     
     // Limpiar borrador y referencia
@@ -210,10 +223,12 @@ export default function CreateRoutineScreen({ navigation, route }) {
                             {exercise.series.reduce((total, serie) => total + (parseInt(serie.series) || 0), 0)} series
                           </Text>
                         </View>
-                        {exercise.restTime && (
+                        {(exercise.rest_minutes || exercise.rest_seconds) && (
                           <View className="flex-row items-center">
                             <Ionicons name="time-outline" size={14} color={colors.text.secondary} />
-                            <Text className="text-sm ml-1" style={{ color: colors.text.secondary }}>{exercise.restTime}</Text>
+                            <Text className="text-sm ml-1" style={{ color: colors.text.secondary }}>
+                              {exercise.rest_minutes || 0}m {exercise.rest_seconds || 0}s
+                            </Text>
                           </View>
                         )}
                       </View>

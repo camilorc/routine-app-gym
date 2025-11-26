@@ -1,106 +1,29 @@
-// Tipos para ejercicios
-export interface Exercise {
-  id: number | string;
-  name: string;
-  muscleGroup: string;
-  equipment: string;
-}
+/**
+ * Punto de entrada central para todos los tipos del proyecto
+ * 
+ * Organización:
+ * - database.ts: Tipos de la base de datos de Supabase
+ * - exercise.ts: Tipos relacionados con ejercicios
+ * - routine.ts: Tipos relacionados con rutinas
+ * - auth.ts: Tipos relacionados con autenticación
+ * - context.ts: Tipos relacionados con contextos de React
+ * - navigation.ts: Tipos relacionados con React Navigation
+ */
 
-export interface ExerciseSerie {
-  series: string;
-  reps: string;
-  weight: string;
-}
+// Re-exportar tipos de base de datos
+export * from './database';
 
-export interface RoutineExercise {
-  name: string;
-  description: string;
-  series: ExerciseSerie[];
-  restTime?: string;
-}
+// Re-exportar todos los tipos de ejercicios
+export * from './exercise';
 
-// Tipos para rutinas
-export interface Routine {
-  id: string;
-  name: string;
-  description: string;
-  exercises: RoutineExercise[];
-  createdAt: string;
-  updatedAt?: string;
-}
+// Re-exportar todos los tipos de rutinas
+export * from './routine';
 
-export interface DraftRoutine {
-  id?: string;
-  name: string;
-  description: string;
-  exercises: RoutineExercise[];
-}
+// Re-exportar todos los tipos de autenticación
+export * from './auth';
 
-// Tipos para autenticación
-export interface User {
-  id: string;
-  email?: string;
-  user_metadata?: {
-    full_name?: string;
-    display_name?: string;
-  };
-}
+// Re-exportar todos los tipos de contextos
+export * from './context';
 
-export interface Session {
-  access_token: string;
-  refresh_token: string;
-  user: User;
-}
-
-export interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ data: any; error: any }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ data: any; error: any }>;
-  signOut: () => Promise<{ error: any }>;
-}
-
-// Tipos para contexto de rutinas
-export interface RoutinesContextType {
-  routines: Routine[];
-  addRoutine: (routine: Routine) => void;
-  updateRoutine: (id: string, routine: Routine) => void;
-  deleteRoutine: (id: string) => void;
-  draftRoutine: DraftRoutine;
-  updateDraftRoutine: (updates: Partial<DraftRoutine>) => void;
-  addExerciseToDraft: (exercise: RoutineExercise) => void;
-  updateDraftExercise: (index: number, exercise: RoutineExercise) => void;
-  removeDraftExercise: (index: number) => void;
-  clearDraftRoutine: () => Promise<void>;
-  loadRoutineForEditing: (routine: Routine) => void;
-  clearAllData: () => Promise<void>;
-}
-
-// Tipos para navegación
-export type RootStackParamList = {
-  MainTabs: undefined;
-  Auth: undefined;
-};
-
-export type TabParamList = {
-  Home: undefined;
-  RoutinesList: undefined;
-  Account: undefined;
-};
-
-export type RoutinesStackParamList = {
-  RoutinesList: undefined;
-  CreateRoutine: { routineToEdit?: Routine };
-  AddExercise: { 
-    exercise?: RoutineExercise;
-    exerciseIndex?: number;
-    isEditing?: boolean;
-  };
-};
-
-export type AuthStackParamList = {
-  AuthContainer: undefined;
-  Login: undefined;
-  Register: undefined;
-};
+// Re-exportar todos los tipos de navegación
+export * from './navigation';

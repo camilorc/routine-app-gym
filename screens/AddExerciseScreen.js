@@ -3,14 +3,46 @@ import { View, Text, TouchableOpacity, TextInput, ScrollView, Modal, Animated, P
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../styles';
-import { searchExercises } from '../constants/exercises';
+import { useRoutines } from '../contexts/RoutinesContext';
+import { EQUIPMENT_CATEGORIES } from '../types/exercise';
 
 // Función para generar IDs únicos
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+// Helper para formatear nombres de categorías de equipamiento
+const formatEquipmentCategory = (category) => {
+  const labels = {
+    'barra': 'Barra',
+    'mancuernas': 'Mancuernas',
+    'maquina': 'Máquina',
+    'peso_corporal': 'Peso Corporal',
+    'cable': 'Cable',
+    'bandas': 'Bandas',
+    'kettlebell': 'Kettlebell',
+    'otro': 'Otro'
+  };
+  return labels[category] || category;
+};
+
+// Validar si un ID es un UUID válido de Supabase
+const isValidUUID = (id) => {
+  if (!id || typeof id !== 'string') return false;
+  // UUID format: 8-4-4-4-12 caracteres hexadecimales
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+};
+
 export default function AddExerciseScreen({ navigation, route }) {
+  const { exercises, isLoadingExercises } = useRoutines();
   const isEditing = route.params?.isEditing || false;
   const exerciseToEdit = route.params?.exercise;
+
+  // Log cuando se carguen los ejercicios
+  useEffect(() => {
+    if (!isLoadingExercises && exercises.length > 0) {
+      console.log('📚 [EJERCICIOS] Maestro de ejercicios cargado:', exercises.length, 'ejercicios disponibles');
+    }
+  }, [isLoadingExercises, exercises]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [exerciseName, setExerciseName] = useState('');
@@ -20,13 +52,18 @@ export default function AddExerciseScreen({ navigation, route }) {
   ]);
   const [restMinutes, setRestMinutes] = useState('');
   const [restSeconds, setRestSeconds] = useState('');
+  const [selectedExerciseId, setSelectedExerciseId] = useState(null); // ID del ejercicio seleccionado de la lista
+  const [isCustomExercise, setIsCustomExercise] = useState(false); // Si el ejercicio fue personalizado
+  const [originalExerciseName, setOriginalExerciseName] = useState(null); // Nombre original del ejercicio para detectar cambios
+  const [selectedExerciseData, setSelectedExerciseData] = useState(null); // Datos completos del ejercicio seleccionado
   
   // Estados para el modal de crear ejercicio
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditingExercise, setIsEditingExercise] = useState(false);
   const [modalExerciseName, setModalExerciseName] = useState('');
   const [modalMuscleGroup, setModalMuscleGroup] = useState('');
-  const [modalEquipment, setModalEquipment] = useState('');
+  const [modalEquipmentText, setModalEquipmentText] = useState('');
+  const [modalEquipmentCategory, setModalEquipmentCategory] = useState('');
   const [modalNotes, setModalNotes] = useState('');
   const [overlayOpacity] = useState(new Animated.Value(0));
   
@@ -37,11 +74,42 @@ export default function AddExerciseScreen({ navigation, route }) {
   // Cargar datos del ejercicio si está en modo edición
   useEffect(() => {
     if (isEditing && exerciseToEdit) {
-      setExerciseName(exerciseToEdit.name || '');
+      console.log('📝 [EDIT MODE] Cargando ejercicio:', exerciseToEdit);
+      
+      const exerciseName = exerciseToEdit.name || '';
+      setExerciseName(exerciseName);
       setDescription(exerciseToEdit.description || '');
+      
+      // Guardar el nombre original para detectar cambios
+      setOriginalExerciseName(exerciseName);
+      console.log('📝 [EDIT MODE] Nombre original guardado:', exerciseName);
+      
+      // Cargar IDs del ejercicio - solo si son UUIDs válidos
+      const exerciseId = exerciseToEdit.exerciseId || exerciseToEdit.basedOnExerciseId || null;
+      const validId = isValidUUID(exerciseId) ? exerciseId : null;
+      setSelectedExerciseId(validId);
+      setIsCustomExercise(!!exerciseToEdit.basedOnExerciseId); // Es personalizado si tiene basedOnExerciseId
+      
+      // Guardar datos completos del ejercicio para el modal
+      setSelectedExerciseData({
+        ...exerciseToEdit,
+        id: validId,
+        name: exerciseName,
+        equipment_category: exerciseToEdit.equipment_category || null,
+        equipment_text: exerciseToEdit.equipment_text || null,
+        muscle_group: exerciseToEdit.muscle_group || null,
+      });
+      
+      console.log('📝 [EDIT MODE] exerciseId:', exerciseToEdit.exerciseId);
+      console.log('📝 [EDIT MODE] basedOnExerciseId:', exerciseToEdit.basedOnExerciseId);
+      console.log('📝 [EDIT MODE] selectedExerciseId establecido:', validId);
+      console.log('📝 [EDIT MODE] isCustomExercise:', !!exerciseToEdit.basedOnExerciseId);
+      console.log('📝 [EDIT MODE] equipment_category:', exerciseToEdit.equipment_category);
+      console.log('📝 [EDIT MODE] equipment_text:', exerciseToEdit.equipment_text);
       
       // Cargar series con IDs
       if (exerciseToEdit.series && exerciseToEdit.series.length > 0) {
+        console.log('📝 [EDIT MODE] Cargando series:', JSON.stringify(exerciseToEdit.series));
         setSeries(exerciseToEdit.series.map(s => ({
           ...s,
           id: s.id || generateId()
@@ -49,13 +117,10 @@ export default function AddExerciseScreen({ navigation, route }) {
       }
       
       // Parsear tiempo de descanso
-      if (exerciseToEdit.restTime) {
-        const timeMatch = exerciseToEdit.restTime.match(/(\d+)m\s*(\d+)s/);
-        if (timeMatch) {
-          setRestMinutes(timeMatch[1]);
-          setRestSeconds(timeMatch[2]);
-        }
-      }
+      console.log('📝 [EDIT MODE] rest_minutes:', exerciseToEdit.rest_minutes);
+      console.log('📝 [EDIT MODE] rest_seconds:', exerciseToEdit.rest_seconds);
+      setRestMinutes(exerciseToEdit.rest_minutes ? exerciseToEdit.rest_minutes.toString() : '');
+      setRestSeconds(exerciseToEdit.rest_seconds ? exerciseToEdit.rest_seconds.toString() : '');
     }
   }, [isEditing, exerciseToEdit]);
 
@@ -70,27 +135,57 @@ export default function AddExerciseScreen({ navigation, route }) {
     }
   }, [isModalVisible]);
 
-  // Buscar ejercicios cuando cambia el query
+  // Buscar ejercicios cuando cambia el query (filtrado local)
   useEffect(() => {
     if (searchQuery.trim().length >= 2) {
-      const results = searchExercises(searchQuery);
+      console.log('🔎 [SEARCH] Filtrando ejercicios locales:', searchQuery);
+      const query = searchQuery.toLowerCase();
+      const results = exercises.filter(exercise => 
+        exercise.name.toLowerCase().includes(query) ||
+        exercise.muscle_group?.toLowerCase().includes(query) ||
+        exercise.equipment_text?.toLowerCase().includes(query) ||
+        exercise.equipment_category?.toLowerCase().includes(query)
+      ).slice(0, 10); // Limitar a 10 resultados
+      
+      console.log('🔎 [SEARCH] Resultados encontrados:', results.length);
+      if (results.length > 0) {
+        console.log('🔎 [SEARCH] Primer resultado:', results[0]);
+      }
       setSearchResults(results);
       setShowSearchResults(results.length > 0);
     } else {
       setSearchResults([]);
       setShowSearchResults(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, exercises]);
 
   const handleSelectExercise = (exercise) => {
+    console.log('🔍 [SELECT] Ejercicio seleccionado COMPLETO:', JSON.stringify(exercise, null, 2));
+    
     // Limpiar el input de búsqueda
     setSearchQuery('');
     setExerciseName(exercise.name);
     
+    // Guardar el ID solo si es un UUID válido de Supabase
+    const validId = isValidUUID(exercise.id) ? exercise.id : null;
+    setSelectedExerciseId(validId);
+    setIsCustomExercise(false);
+    
+    // Guardar datos completos del ejercicio para cargarlos en el modal
+    setSelectedExerciseData(exercise);
+    
+    console.log('🔍 [SELECT] ID del ejercicio:', exercise.id);
+    console.log('🔍 [SELECT] Es UUID válido?', isValidUUID(exercise.id));
+    console.log('🔍 [SELECT] selectedExerciseId establecido:', validId);
+    console.log('🔍 [SELECT] equipment_category:', exercise.equipment_category);
+    console.log('🔍 [SELECT] equipment_text:', exercise.equipment_text);
+    console.log('🔍 [SELECT] Tiene equipment_category?', exercise.hasOwnProperty('equipment_category'));
+    console.log('🔍 [SELECT] Tiene equipment_text?', exercise.hasOwnProperty('equipment_text'));
+    
     // Agregar información del ejercicio a la descripción
     const details = [];
-    if (exercise.muscleGroup) details.push(`Grupo muscular: ${exercise.muscleGroup}`);
-    if (exercise.equipment) details.push(`Equipo: ${exercise.equipment}`);
+    if (exercise.muscle_group) details.push(`Grupo muscular: ${exercise.muscle_group}`);
+    if (exercise.equipment_text) details.push(`Equipo: ${exercise.equipment_text}`);
     
     if (details.length > 0) {
       setDescription(details.join('\n'));
@@ -112,23 +207,45 @@ export default function AddExerciseScreen({ navigation, route }) {
     // Cargar los datos del ejercicio actual en el modal
     setModalExerciseName(exerciseName);
     
-    // Limpiar campos antes de parsear
-    setModalMuscleGroup('');
-    setModalEquipment('');
+    // Cargar datos del ejercicio seleccionado si existe
+    if (selectedExerciseData) {
+      console.log('✏️ [MODAL EDIT] Cargando datos del ejercicio:', selectedExerciseData);
+      
+      // Cargar grupo muscular
+      if (selectedExerciseData.muscle_group) {
+        setModalMuscleGroup(selectedExerciseData.muscle_group);
+      }
+      
+      // Cargar equipment_category
+      if (selectedExerciseData.equipment_category) {
+        setModalEquipmentCategory(selectedExerciseData.equipment_category);
+        console.log('✏️ [MODAL EDIT] Equipment category cargado:', selectedExerciseData.equipment_category);
+      }
+      
+      // Cargar equipment_text
+      if (selectedExerciseData.equipment_text) {
+        setModalEquipmentText(selectedExerciseData.equipment_text);
+        console.log('✏️ [MODAL EDIT] Equipment text cargado:', selectedExerciseData.equipment_text);
+      }
+    } else {
+      // Si no hay datos del ejercicio seleccionado, limpiar campos
+      setModalMuscleGroup('');
+      setModalEquipmentText('');
+      setModalEquipmentCategory('');
+    }
+    
+    // Limpiar notas
     setModalNotes('');
     
-    // Parsear la descripción para extraer grupo muscular, equipo y notas
+    // Parsear la descripción para extraer notas adicionales
     if (description.trim()) {
       const descLines = description.split('\n');
       const notesLines = [];
       
       descLines.forEach(line => {
         const trimmedLine = line.trim();
-        if (trimmedLine.startsWith('Grupo muscular:')) {
-          setModalMuscleGroup(trimmedLine.replace('Grupo muscular:', '').trim());
-        } else if (trimmedLine.startsWith('Equipo:')) {
-          setModalEquipment(trimmedLine.replace('Equipo:', '').trim());
-        } else if (trimmedLine !== '') {
+        // Saltar las líneas de información del ejercicio
+        if (!trimmedLine.startsWith('Grupo muscular:') && !trimmedLine.startsWith('Equipo:') && trimmedLine !== '') {
           notesLines.push(trimmedLine);
         }
       });
@@ -152,7 +269,8 @@ export default function AddExerciseScreen({ navigation, route }) {
       // Limpiar campos del modal
       setModalExerciseName('');
       setModalMuscleGroup('');
-      setModalEquipment('');
+      setModalEquipmentText('');
+      setModalEquipmentCategory('');
       setModalNotes('');
     });
   };
@@ -162,13 +280,31 @@ export default function AddExerciseScreen({ navigation, route }) {
       return;
     }
     
+    console.log('✏️ [MODAL] Guardando ejercicio personalizado:', modalExerciseName.trim());
+    console.log('✏️ [MODAL] selectedExerciseId actual:', selectedExerciseId);
+    
     // Guardar el ejercicio creado/editado
     setExerciseName(modalExerciseName.trim());
+    
+    // Marcar como ejercicio personalizado
+    setIsCustomExercise(true);
+    console.log('✏️ [MODAL] isCustomExercise establecido a true');
+    
+    // Actualizar selectedExerciseData con los nuevos valores
+    const updatedExerciseData = {
+      ...selectedExerciseData,
+      name: modalExerciseName.trim(),
+      muscle_group: modalMuscleGroup.trim() || null,
+      equipment_text: modalEquipmentText.trim() || null,
+      equipment_category: modalEquipmentCategory || null,
+    };
+    setSelectedExerciseData(updatedExerciseData);
+    console.log('✏️ [MODAL] Datos del ejercicio actualizados:', updatedExerciseData);
     
     // Siempre actualizar la descripción con los detalles
     const detailsArray = [];
     if (modalMuscleGroup.trim()) detailsArray.push(`Grupo muscular: ${modalMuscleGroup.trim()}`);
-    if (modalEquipment.trim()) detailsArray.push(`Equipo: ${modalEquipment.trim()}`);
+    if (modalEquipmentText.trim()) detailsArray.push(`Equipo: ${modalEquipmentText.trim()}`);
     if (modalNotes.trim()) detailsArray.push(modalNotes.trim());
     
     // Actualizar descripción (incluso si está vacía)
@@ -216,11 +352,35 @@ export default function AddExerciseScreen({ navigation, route }) {
   const handleAddToRoutine = () => {
     if (!isAddToRoutineEnabled) return;
     
+    console.log('\n💾 [SAVE] ========== GUARDANDO EJERCICIO ==========');
+    console.log('💾 [SAVE] isEditing:', isEditing);
+    console.log('💾 [SAVE] exerciseName actual:', exerciseName.trim());
+    console.log('💾 [SAVE] originalExerciseName:', originalExerciseName);
+    console.log('💾 [SAVE] selectedExerciseId:', selectedExerciseId);
+    console.log('💾 [SAVE] isCustomExercise:', isCustomExercise);
+    
     // Preparar el ejercicio con todos sus datos
     const finalExerciseName = searchQuery.trim() !== '' ? searchQuery : exerciseName.trim();
-    const restTime = restMinutes || restSeconds 
-      ? `${restMinutes || '0'}m ${restSeconds || '0'}s` 
-      : null;
+    const rest_minutes = restMinutes ? parseInt(restMinutes) : null;
+    const rest_seconds = restSeconds ? parseInt(restSeconds) : null;
+    
+    // Determinar si el ejercicio fue modificado al editar
+    let shouldUseAsBase = isCustomExercise;
+    
+    // Si estamos editando y el nombre cambió, debe convertirse en ejercicio personalizado
+    if (isEditing && originalExerciseName && selectedExerciseId) {
+      const nameChanged = finalExerciseName !== originalExerciseName;
+      console.log('💾 [SAVE] Nombre cambió?', nameChanged, '("' + finalExerciseName + '" !== "' + originalExerciseName + '")');
+      
+      if (nameChanged && !isCustomExercise) {
+        // Si tenía exerciseId directo y el nombre cambió, convertir a basedOnExerciseId
+        shouldUseAsBase = true;
+        console.log('💾 [SAVE] ⚡ Convirtiendo a ejercicio personalizado (nombre cambió)');
+      }
+    }
+    
+    console.log('💾 [SAVE] shouldUseAsBase:', shouldUseAsBase);
+    console.log('💾 [SAVE] isValidUUID(selectedExerciseId):', isValidUUID(selectedExerciseId));
     
     const exercise = {
       name: finalExerciseName,
@@ -231,10 +391,20 @@ export default function AddExerciseScreen({ navigation, route }) {
         serie.weight.trim() !== '' || 
         serie.rir.trim() !== ''
       ),
-      restTime: restTime,
+      rest_minutes: rest_minutes,
+      rest_seconds: rest_seconds,
+      // Si no es personalizado, usar directamente el ID del ejercicio (validar UUID)
+      exerciseId: !shouldUseAsBase && isValidUUID(selectedExerciseId) ? selectedExerciseId : undefined,
+      // Si fue personalizado, guardar referencia al ejercicio original (validar UUID)
+      basedOnExerciseId: shouldUseAsBase && isValidUUID(selectedExerciseId) ? selectedExerciseId : undefined,
+      // Incluir datos de equipamiento desde selectedExerciseData
+      equipment_category: selectedExerciseData?.equipment_category || null,
+      equipment_text: selectedExerciseData?.equipment_text || null,
+      muscle_group: selectedExerciseData?.muscle_group || null,
     };
     
-    console.log('Ejercicio añadido a la rutina:', exercise);
+    console.log('💾 [SAVE] ✅ Ejercicio final:', exercise);
+    console.log('💾 [SAVE] ========================================\n');
     
     // Return the created/updated exercise via navigation params (serializable)
     // Set params and go back to CreateRoutine
@@ -327,7 +497,7 @@ export default function AddExerciseScreen({ navigation, route }) {
                       className="text-xs"
                       style={{ color: colors.text.secondary }}
                     >
-                      {exercise.muscleGroup} • {exercise.equipment}
+                      {exercise.muscle_group}{exercise.equipment_text ? ` • ${exercise.equipment_text}` : ''}
                     </Text>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color={colors.text.tertiary} />
@@ -668,18 +838,58 @@ export default function AddExerciseScreen({ navigation, route }) {
                 />
               </View>
 
-              {/* Equipo */}
+              {/* Equipamiento (Grid de opciones) */}
               <View className="mb-4">
                 <Text 
                   className="text-sm mb-2 font-medium"
                   style={{ color: colors.text.secondary }}
                 >
-                  Equipo
+                  Equipamiento *
+                </Text>
+                <View className="flex-row flex-wrap -mx-1">
+                  {EQUIPMENT_CATEGORIES.map((category) => (
+                    <TouchableOpacity
+                      key={category}
+                      onPress={() => setModalEquipmentCategory(category)}
+                      className="px-3 py-2 rounded-lg m-1"
+                      style={{
+                        backgroundColor: modalEquipmentCategory === category 
+                          ? (colors.accent.bright || colors.accent.primary)
+                          : colors.background.secondary,
+                        borderWidth: 2,
+                        borderColor: modalEquipmentCategory === category 
+                          ? (colors.accent.bright || colors.accent.primary)
+                          : colors.border.light,
+                        minWidth: '30%',
+                      }}
+                    >
+                      <Text
+                        className="text-sm font-semibold text-center"
+                        style={{
+                          color: modalEquipmentCategory === category 
+                            ? colors.background.primary
+                            : colors.text.primary,
+                        }}
+                      >
+                        {formatEquipmentCategory(category)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Descripción del equipamiento */}
+              <View className="mb-4">
+                <Text 
+                  className="text-sm mb-2 font-medium"
+                  style={{ color: colors.text.secondary }}
+                >
+                  Descripción del equipamiento
                 </Text>
                 <TextInput
-                  value={modalEquipment}
-                  onChangeText={setModalEquipment}
-                  placeholder="Ej: Barra, Mancuernas, Máquina..."
+                  value={modalEquipmentText}
+                  onChangeText={setModalEquipmentText}
+                  placeholder="Ej: Barra olímpica 20kg, Mancuernas ajustables..."
                   placeholderTextColor={colors.text.secondary}
                   className="rounded-xl px-4 py-3 text-base"
                   style={{ 
@@ -720,13 +930,13 @@ export default function AddExerciseScreen({ navigation, route }) {
               {/* Botón Guardar */}
               <TouchableOpacity
                 onPress={handleSaveNewExercise}
-                disabled={modalExerciseName.trim() === ''}
+                disabled={modalExerciseName.trim() === '' || modalEquipmentCategory === ''}
                 className="rounded-xl p-4 mb-6"
                 style={{ 
-                  backgroundColor: modalExerciseName.trim() !== ''
+                  backgroundColor: modalExerciseName.trim() !== '' && modalEquipmentCategory !== ''
                     ? (colors.accent.bright || colors.accent.primary)
                     : colors.disabled || colors.background.tertiary,
-                  opacity: modalExerciseName.trim() !== '' ? 1 : 0.5
+                  opacity: modalExerciseName.trim() !== '' && modalEquipmentCategory !== '' ? 1 : 0.5
                 }}
               >
                 <Text className="font-semibold text-center text-base" style={{ color: colors.background.primary }}>
