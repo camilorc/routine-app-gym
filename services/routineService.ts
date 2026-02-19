@@ -1,6 +1,6 @@
 import { supabase } from '../auth/supabaseClient';
 import { Database } from '../types/database';
-import { Routine, DraftRoutine, RoutineExercise } from '../types';
+import { Routine, DraftRoutine, RoutineExercise, Exercise } from '../types';
 
 type RoutineRow = Database['public']['Tables']['routines']['Row'];
 type RoutineInsert = Database['public']['Tables']['routines']['Insert'];
@@ -80,12 +80,19 @@ export class RoutineService {
     }
 
     // 2. Crear los ejercicios de la rutina
+    let createdCustomExercises: Exercise[] = [];
     if (draft.exercises && draft.exercises.length > 0) {
-      await this.saveRoutineExercises(routine.id, draft.exercises, userId);
+      createdCustomExercises = await this.saveRoutineExercises(routine.id, draft.exercises, userId);
     }
 
     // 3. Obtener la rutina completa con ejercicios
-    return await this.getRoutineById(routine.id);
+    const fullRoutine = await this.getRoutineById(routine.id);
+    
+    // Agregar ejercicios personalizados creados al resultado
+    return {
+      ...fullRoutine,
+      _createdCustomExercises: createdCustomExercises // Campo temporal para comunicar al context
+    } as any;
   }
 
   /**
@@ -134,12 +141,19 @@ export class RoutineService {
       .eq('routine_id', routineId);
 
     // 3. Crear nuevos ejercicios
+    let createdCustomExercises: Exercise[] = [];
     if (draft.exercises && draft.exercises.length > 0) {
-      await this.saveRoutineExercises(routineId, draft.exercises, existingRoutine.user_id);
+      createdCustomExercises = await this.saveRoutineExercises(routineId, draft.exercises, existingRoutine.user_id);
     }
 
     // 4. Obtener la rutina completa
-    return await this.getRoutineById(routineId);
+    const fullRoutine = await this.getRoutineById(routineId);
+    
+    // Agregar ejercicios personalizados creados al resultado
+    return {
+      ...fullRoutine,
+      _createdCustomExercises: createdCustomExercises // Campo temporal para comunicar al context
+    } as any;
   }
 
   /**
@@ -193,21 +207,55 @@ export class RoutineService {
 
   /**
    * Guardar ejercicios de una rutina
+   * Retorna array de ejercicios personalizados creados
    */
-  private static async saveRoutineExercises(routineId: string, exercises: RoutineExercise[], userId: string): Promise<void> {
+  private static async saveRoutineExercises(routineId: string, exercises: RoutineExercise[], userId: string): Promise<Exercise[]> {
     if (!supabase) {
       throw new Error('Supabase not configured');
     }
 
+    const createdCustomExercises: Exercise[] = [];
+
     for (let i = 0; i < exercises.length; i++) {
       const exercise = exercises[i];
       
-      // Crear ejercicio en la BD si no existe (ejercicios personalizados)
+      // Crear o actualizar ejercicio en la BD si no existe o si es personalizado
       let exerciseId = exercise.exerciseId;
+      
+      // Verificar si el ejercicio personalizado ya existe y necesita actualización
+      if (exerciseId) {
+        // Verificar si es un ejercicio personalizado que debe actualizarse
+        const { data: existingExercise } = await supabase
+          .from('exercises')
+          .select('is_global, created_by')
+          .eq('id', exerciseId)
+          .single();
+        
+        // Si es ejercicio personalizado del usuario y el nombre cambió, actualizarlo
+        if (existingExercise && !existingExercise.is_global && existingExercise.created_by === userId) {
+          const { data: updatedExercise, error: updateError } = await supabase
+            .from('exercises')
+            .update({
+              name: exercise.name,
+              description: exercise.description || null,
+              muscle_group: exercise.muscle_group || 'otro',
+              equipment_text: exercise.equipment_text,
+              equipment_category: exercise.equipment_category,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', exerciseId)
+            .select()
+            .single();
+          
+          if (!updateError && updatedExercise) {
+            console.log('✅ [SERVICE] Ejercicio personalizado actualizado:', updatedExercise.name);
+          }
+        }
+      }
       
       if (!exerciseId) {
         // Si existe basedOnExerciseId, obtener los datos del ejercicio base
-        let muscleGroup = 'fullbody';
+        let muscleGroup = 'otro';
         let equipmentText = null;
         let equipmentCategory = null;
         
@@ -247,6 +295,28 @@ export class RoutineService {
         }
 
         exerciseId = newExercise.id;
+        
+        // Agregar al array de ejercicios personalizados creados
+        createdCustomExercises.push({
+          id: newExercise.id,
+          name: newExercise.name,
+          description: newExercise.description,
+          muscle_group: newExercise.muscle_group as any,
+          secondary_muscles: newExercise.secondary_muscles as any,
+          equipment_text: newExercise.equipment_text,
+          equipment_category: newExercise.equipment_category as any,
+          difficulty: newExercise.difficulty as any,
+          video_url: newExercise.video_url,
+          image_url: newExercise.image_url,
+          instructions: newExercise.instructions,
+          created_by: newExercise.created_by,
+          is_global: newExercise.is_global,
+          based_on_exercise_id: newExercise.based_on_exercise_id,
+          usage_count: 0,
+          created_at: newExercise.created_at,
+          updated_at: newExercise.updated_at,
+        });
+        console.log('✅ [SERVICE] Ejercicio personalizado creado:', newExercise.name);
       }
 
       // Crear routine_exercise
@@ -288,6 +358,9 @@ export class RoutineService {
         }
       }
     }
+    
+    console.log('📚 [SERVICE] Total ejercicios personalizados creados:', createdCustomExercises.length);
+    return createdCustomExercises;
   }
 
   /**
@@ -299,6 +372,9 @@ export class RoutineService {
         name: re.exercises?.name || '',
         description: re.notes || '',
         exerciseId: re.exercise_id,
+        muscle_group: re.exercises?.muscle_group || null,
+        equipment_category: re.exercises?.equipment_category || null,
+        equipment_text: re.exercises?.equipment_text || null,
         series: re.exercise_sets?.map((set: any) => ({
           series: set.set_number?.toString() || '',
           reps: set.reps || '',

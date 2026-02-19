@@ -20,6 +20,7 @@ export interface RoutinesContextType {
   loadRoutineForEditing: (routine: Routine) => void;
   clearAllData: () => Promise<void>;
   draftToRoutine: (draft: DraftRoutine, userId: string) => Routine;
+  addExerciseToMaster: (exercise: Exercise) => void;
   isLoadingRoutines: boolean;
   isLoadingExercises: boolean;
   error: string | null;

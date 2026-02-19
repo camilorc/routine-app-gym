@@ -1,12 +1,31 @@
 export type MuscleGroup = 
-  | 'pecho' 
-  | 'espalda' 
-  | 'piernas' 
-  | 'hombros' 
-  | 'brazos' 
-  | 'core'
+  | 'piernas'
   | 'gluteos'
+  | 'espalda'
+  | 'pecho'
+  | 'hombros'
+  | 'biceps'
+  | 'triceps'
+  | 'core'
   | 'pantorrillas'
+  | 'antebrazos'
+  | 'cuello'
+  | 'otro'
+
+export const MUSCLE_GROUPS: { id: MuscleGroup; name: string; category: string }[] = [
+  { id: 'piernas', name: 'Piernas', category: 'lower' },
+  { id: 'gluteos', name: 'Glúteos', category: 'lower' },
+  { id: 'espalda', name: 'Espalda', category: 'upper' },
+  { id: 'pecho', name: 'Pecho', category: 'upper' },
+  { id: 'hombros', name: 'Hombros', category: 'upper' },
+  { id: 'biceps', name: 'Bíceps', category: 'upper' },
+  { id: 'triceps', name: 'Tríceps', category: 'upper' },
+  { id: 'core', name: 'Core', category: 'core' },
+  { id: 'pantorrillas', name: 'Pantorrillas', category: 'lower' },
+  { id: 'antebrazos', name: 'Antebrazos', category: 'upper' },
+  { id: 'cuello', name: 'Cuello', category: 'upper' },
+  { id: 'otro', name: 'Otro', category: 'other' }
+]
 
 export const EQUIPMENT_CATEGORIES = [
   'barra',

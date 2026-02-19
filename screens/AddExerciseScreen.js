@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Modal, Animated, Pressable, FlatList } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Modal, Animated, Pressable, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../styles';
@@ -70,6 +70,9 @@ export default function AddExerciseScreen({ navigation, route }) {
   // Estados para búsqueda de ejercicios
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  
+  // Ref para el ScrollView del modal
+  const modalScrollViewRef = useRef(null);
 
   // Cargar datos del ejercicio si está en modo edición
   useEffect(() => {
@@ -99,6 +102,17 @@ export default function AddExerciseScreen({ navigation, route }) {
         equipment_text: exerciseToEdit.equipment_text || null,
         muscle_group: exerciseToEdit.muscle_group || null,
       });
+      
+      // Cargar equipamiento en los estados del modal para edición
+      if (exerciseToEdit.equipment_category) {
+        setModalEquipmentCategory(exerciseToEdit.equipment_category);
+      }
+      if (exerciseToEdit.equipment_text) {
+        setModalEquipmentText(exerciseToEdit.equipment_text);
+      }
+      if (exerciseToEdit.muscle_group) {
+        setModalMuscleGroup(exerciseToEdit.muscle_group);
+      }
       
       console.log('📝 [EDIT MODE] exerciseId:', exerciseToEdit.exerciseId);
       console.log('📝 [EDIT MODE] basedOnExerciseId:', exerciseToEdit.basedOnExerciseId);
@@ -152,7 +166,7 @@ export default function AddExerciseScreen({ navigation, route }) {
         console.log('🔎 [SEARCH] Primer resultado:', results[0]);
       }
       setSearchResults(results);
-      setShowSearchResults(results.length > 0);
+      setShowSearchResults(true);
     } else {
       setSearchResults([]);
       setShowSearchResults(false);
@@ -207,6 +221,9 @@ export default function AddExerciseScreen({ navigation, route }) {
     // Cargar los datos del ejercicio actual en el modal
     setModalExerciseName(exerciseName);
     
+    console.log('✏️ [MODAL EDIT] ========== ABRIENDO MODAL PARA EDITAR ==========');
+    console.log('✏️ [MODAL EDIT] selectedExerciseData:', JSON.stringify(selectedExerciseData, null, 2));
+    
     // Cargar datos del ejercicio seleccionado si existe
     if (selectedExerciseData) {
       console.log('✏️ [MODAL EDIT] Cargando datos del ejercicio:', selectedExerciseData);
@@ -214,20 +231,26 @@ export default function AddExerciseScreen({ navigation, route }) {
       // Cargar grupo muscular
       if (selectedExerciseData.muscle_group) {
         setModalMuscleGroup(selectedExerciseData.muscle_group);
+        console.log('✏️ [MODAL EDIT] Muscle group cargado:', selectedExerciseData.muscle_group);
       }
       
       // Cargar equipment_category
       if (selectedExerciseData.equipment_category) {
         setModalEquipmentCategory(selectedExerciseData.equipment_category);
         console.log('✏️ [MODAL EDIT] Equipment category cargado:', selectedExerciseData.equipment_category);
+      } else {
+        console.log('✏️ [MODAL EDIT] ⚠️ NO HAY equipment_category en selectedExerciseData');
       }
       
       // Cargar equipment_text
       if (selectedExerciseData.equipment_text) {
         setModalEquipmentText(selectedExerciseData.equipment_text);
         console.log('✏️ [MODAL EDIT] Equipment text cargado:', selectedExerciseData.equipment_text);
+      } else {
+        console.log('✏️ [MODAL EDIT] ⚠️ NO HAY equipment_text en selectedExerciseData');
       }
     } else {
+      console.log('✏️ [MODAL EDIT] ⚠️ NO HAY selectedExerciseData - limpiando campos');
       // Si no hay datos del ejercicio seleccionado, limpiar campos
       setModalMuscleGroup('');
       setModalEquipmentText('');
@@ -340,7 +363,7 @@ export default function AddExerciseScreen({ navigation, route }) {
   const canAddSeries = series.length > 0 && series[series.length - 1].series.trim() !== '';
 
   // Validaciones para el botón "Añadir a la Rutina"
-  const hasExerciseName = searchQuery.trim() !== '' || exerciseName.trim() !== '';
+  const hasExerciseName = exerciseName.trim() !== '';
   const hasAtLeastOneSeries = series.length > 0 && series.some(serie => 
     serie.series.trim() !== '' || 
     serie.reps.trim() !== '' || 
@@ -382,6 +405,10 @@ export default function AddExerciseScreen({ navigation, route }) {
     console.log('💾 [SAVE] shouldUseAsBase:', shouldUseAsBase);
     console.log('💾 [SAVE] isValidUUID(selectedExerciseId):', isValidUUID(selectedExerciseId));
     
+    // Determinar si debemos pasar exerciseId (ejercicio ya existe en BD) o basedOnExerciseId (nuevo personalizado)
+    // Si el ejercicio YA es personalizado (exerciseToEdit.exerciseId existe), mantener su ID para actualizarlo
+    const hasExistingCustomExerciseId = isEditing && exerciseToEdit && exerciseToEdit.exerciseId && !exerciseToEdit.basedOnExerciseId;
+    
     const exercise = {
       name: finalExerciseName,
       description: description.trim(),
@@ -393,10 +420,12 @@ export default function AddExerciseScreen({ navigation, route }) {
       ),
       rest_minutes: rest_minutes,
       rest_seconds: rest_seconds,
-      // Si no es personalizado, usar directamente el ID del ejercicio (validar UUID)
-      exerciseId: !shouldUseAsBase && isValidUUID(selectedExerciseId) ? selectedExerciseId : undefined,
-      // Si fue personalizado, guardar referencia al ejercicio original (validar UUID)
-      basedOnExerciseId: shouldUseAsBase && isValidUUID(selectedExerciseId) ? selectedExerciseId : undefined,
+      // Si el ejercicio personalizado ya existe, pasar su ID para actualizarlo
+      // Si no es personalizado, usar directamente el ID del ejercicio global
+      // Si es nuevo personalizado, no pasar exerciseId
+      exerciseId: (hasExistingCustomExerciseId || !shouldUseAsBase) && isValidUUID(selectedExerciseId) ? selectedExerciseId : undefined,
+      // Si fue personalizado basado en otro, guardar referencia al ejercicio original
+      basedOnExerciseId: shouldUseAsBase && !hasExistingCustomExerciseId && isValidUUID(selectedExerciseId) ? selectedExerciseId : undefined,
       // Incluir datos de equipamiento desde selectedExerciseData
       equipment_category: selectedExerciseData?.equipment_category || null,
       equipment_text: selectedExerciseData?.equipment_text || null,
@@ -420,6 +449,11 @@ export default function AddExerciseScreen({ navigation, route }) {
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background.primary }}>
+      <KeyboardAvoidingView 
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}
+      >
       {/* Header */}
       <View 
         className="flex-row items-center px-6 py-4 border-b"
@@ -439,35 +473,40 @@ export default function AddExerciseScreen({ navigation, route }) {
         </Text>
       </View>
 
-      <ScrollView className="flex-1 px-6">
+      <ScrollView 
+        className="flex-1 px-6"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         {/* Buscador */}
-        <View className="mt-6 mb-4">
-          <View 
-            className="rounded-xl px-4 py-3 flex-row items-center" 
-            style={{ backgroundColor: colors.background.secondary, borderColor: colors.border.light, borderWidth: 1 }}
-          >
-            <Ionicons name="search-outline" size={20} color={colors.text.secondary} />
-            <TextInput
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="Buscar ejercicio"
-              placeholderTextColor={colors.text.secondary}
-              className="flex-1 ml-3 text-base"
-              style={{ color: colors.text.primary }}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => {
-                setSearchQuery('');
-                setSearchResults([]);
-                setShowSearchResults(false);
-              }}>
-                <Ionicons name="close-circle" size={20} color={colors.text.secondary} />
-              </TouchableOpacity>
-            )}
-          </View>
+        {!isEditing && (
+          <View className="mt-6 mb-4">
+            <View 
+              className="rounded-xl px-4 py-3 flex-row items-center" 
+              style={{ backgroundColor: colors.background.secondary, borderColor: colors.border.light, borderWidth: 1 }}
+            >
+              <Ionicons name="search-outline" size={20} color={colors.text.secondary} />
+              <TextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="Buscar ejercicio"
+                placeholderTextColor={colors.text.secondary}
+                className="flex-1 ml-3 text-base"
+                style={{ color: colors.text.primary, lineHeight: 20 }}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => {
+                  setSearchQuery('');
+                  setSearchResults([]);
+                  setShowSearchResults(false);
+                }}>
+                  <Ionicons name="close-circle" size={20} color={colors.text.secondary} />
+                </TouchableOpacity>
+              )}
+            </View>
 
           {/* Resultados de búsqueda */}
-          {showSearchResults && searchResults.length > 0 && (
+          {showSearchResults && (
             <View 
               className="mt-2 rounded-xl overflow-hidden"
               style={{ 
@@ -476,39 +515,52 @@ export default function AddExerciseScreen({ navigation, route }) {
                 borderWidth: 1
               }}
             >
-              {searchResults.map((exercise, index) => (
-                <TouchableOpacity
-                  key={exercise.id}
-                  onPress={() => handleSelectExercise(exercise)}
-                  className="px-4 py-3 flex-row items-center"
-                  style={{
-                    borderBottomWidth: index < searchResults.length - 1 ? 1 : 0,
-                    borderBottomColor: colors.border.light
-                  }}
-                >
-                  <View className="flex-1">
-                    <Text 
-                      className="text-base font-medium mb-1"
-                      style={{ color: colors.text.primary }}
-                    >
-                      {exercise.name}
-                    </Text>
-                    <Text 
-                      className="text-xs"
-                      style={{ color: colors.text.secondary }}
-                    >
-                      {exercise.muscle_group}{exercise.equipment_text ? ` • ${exercise.equipment_text}` : ''}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.text.tertiary} />
-                </TouchableOpacity>
-              ))}
+              {searchResults.length > 0 ? (
+                searchResults.map((exercise, index) => (
+                  <TouchableOpacity
+                    key={exercise.id}
+                    onPress={() => handleSelectExercise(exercise)}
+                    className="px-4 py-3 flex-row items-center"
+                    style={{
+                      borderBottomWidth: index < searchResults.length - 1 ? 1 : 0,
+                      borderBottomColor: colors.border.light
+                    }}
+                  >
+                    <View className="flex-1">
+                      <Text 
+                        className="text-base font-medium mb-1"
+                        style={{ color: colors.text.primary }}
+                      >
+                        {exercise.name}
+                      </Text>
+                      <Text 
+                        className="text-xs"
+                        style={{ color: colors.text.secondary }}
+                      >
+                        {exercise.muscle_group}{exercise.equipment_text ? ` • ${exercise.equipment_text}` : ''}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={colors.text.tertiary} />
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View className="px-4 py-3">
+                  <Text 
+                    className="text-base text-center"
+                    style={{ color: colors.text.secondary }}
+                  >
+                    No se encontraron ejercicios
+                  </Text>
+                </View>
+              )}
             </View>
           )}
-        </View>
+          </View>
+        )}
 
         {/* O crear un nuevo ejercicio */}
-        <TouchableOpacity 
+        {!isEditing && (
+          <TouchableOpacity 
           onPress={openModal}
           className="mb-6 rounded-xl p-4 border-2 border-dashed flex-row items-center justify-center"
           style={{ borderColor: colors.border.light }}
@@ -520,13 +572,14 @@ export default function AddExerciseScreen({ navigation, route }) {
           >
             Crear nuevo ejercicio
           </Text>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        )}
 
         {/* Nombre del ejercicio seleccionado */}
         {exerciseName ? (
           <TouchableOpacity 
             onPress={openModalForEdit}
-            className="mb-4"
+            className={isEditing ? "mt-6 mb-4" : "mb-4"}
           >
             <View 
               className="text-xl font-bold rounded-xl px-4 py-3 flex-row items-center justify-between"
@@ -563,12 +616,15 @@ export default function AddExerciseScreen({ navigation, route }) {
             multiline
             numberOfLines={4}
             textAlignVertical="top"
-            className="rounded-xl px-4 py-3 text-base h-28"
+            className="rounded-xl px-4 text-base h-28"
             style={{ 
               backgroundColor: colors.background.secondary, 
               color: colors.text.primary,
               borderColor: colors.border.light,
-              borderWidth: 1
+              borderWidth: 1,
+              lineHeight: 22,
+              paddingTop: 12,
+              paddingBottom: 12
             }}
           />
         </View>
@@ -616,8 +672,8 @@ export default function AddExerciseScreen({ navigation, route }) {
                     value={serie.series}
                     onChangeText={(value) => updateSeriesField(serie.id, 'series', value)}
                     keyboardType="numeric"
-                    className="text-center rounded-lg py-2 w-full text-base"
-                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1 }}
+                    className="text-center rounded-lg w-full text-base"
+                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1, lineHeight: 20, paddingTop: 10, paddingBottom: 10 }}
                   />
                 </View>
                 <View className="flex-1 items-center mx-1">
@@ -625,8 +681,8 @@ export default function AddExerciseScreen({ navigation, route }) {
                     value={serie.reps}
                     onChangeText={(value) => updateSeriesField(serie.id, 'reps', value)}
                     keyboardType="numeric"
-                    className="text-center rounded-lg py-2 w-full text-base"
-                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1 }}
+                    className="text-center rounded-lg w-full text-base"
+                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1, lineHeight: 20, paddingTop: 10, paddingBottom: 10 }}
                   />
                 </View>
                 <View className="flex-1 items-center mx-1">
@@ -634,8 +690,8 @@ export default function AddExerciseScreen({ navigation, route }) {
                     value={serie.weight}
                     onChangeText={(value) => updateSeriesField(serie.id, 'weight', value)}
                     keyboardType="numeric"
-                    className="text-center rounded-lg py-2 w-full text-base"
-                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1 }}
+                    className="text-center rounded-lg w-full text-base"
+                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1, lineHeight: 20, paddingTop: 10, paddingBottom: 10 }}
                   />
                 </View>
                 <View className="flex-1 items-center mx-1">
@@ -643,8 +699,8 @@ export default function AddExerciseScreen({ navigation, route }) {
                     value={serie.rir}
                     onChangeText={(value) => updateSeriesField(serie.id, 'rir', value)}
                     keyboardType="numeric"
-                    className="text-center rounded-lg py-2 w-full text-base"
-                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1 }}
+                    className="text-center rounded-lg w-full text-base"
+                    style={{ backgroundColor: colors.background.secondary, color: colors.text.primary, borderColor: colors.border.light, borderWidth: 1, lineHeight: 20, paddingTop: 10, paddingBottom: 10 }}
                   />
                 </View>
                 {series.length > 1 ? (
@@ -703,12 +759,15 @@ export default function AddExerciseScreen({ navigation, route }) {
                 placeholder="Minutos"
                 placeholderTextColor={colors.text.secondary}
                 keyboardType="numeric"
-                className="rounded-xl px-4 py-4 text-base text-center"
+                className="rounded-xl px-4 text-base text-center"
                 style={{ 
                   backgroundColor: colors.background.secondary, 
                   color: colors.text.primary,
                   borderColor: colors.border.light,
-                  borderWidth: 1
+                  borderWidth: 1,
+                  lineHeight: 20,
+                  paddingTop: 14,
+                  paddingBottom: 14
                 }}
               />
             </View>
@@ -719,12 +778,15 @@ export default function AddExerciseScreen({ navigation, route }) {
                 placeholder="Segundos"
                 placeholderTextColor={colors.text.secondary}
                 keyboardType="numeric"
-                className="rounded-xl px-4 py-4 text-base text-center"
+                className="rounded-xl px-4 text-base text-center"
                 style={{ 
                   backgroundColor: colors.background.secondary, 
                   color: colors.text.primary,
                   borderColor: colors.border.light,
-                  borderWidth: 1
+                  borderWidth: 1,
+                  lineHeight: 20,
+                  paddingTop: 14,
+                  paddingBottom: 14
                 }}
               />
             </View>
@@ -777,6 +839,11 @@ export default function AddExerciseScreen({ navigation, route }) {
               marginTop: 50
             }}
           >
+            <KeyboardAvoidingView 
+              className="flex-1"
+              behavior="padding"
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 50}
+            >
             {/* Header del modal con X */}
             <View className="flex-row items-center justify-between px-6 pt-6 pb-4 border-b" style={{ borderColor: colors.border.light }}>
               <Text className="text-xl font-bold flex-1" style={{ color: colors.text.primary }}>
@@ -791,7 +858,13 @@ export default function AddExerciseScreen({ navigation, route }) {
               </TouchableOpacity>
             </View>
 
-            <ScrollView className="px-6 flex-1" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <ScrollView 
+              ref={modalScrollViewRef}
+              className="px-6 flex-1" 
+              showsVerticalScrollIndicator={false} 
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
               {/* Nombre del ejercicio */}
               <View className="mb-4 mt-6">
                 <Text 
@@ -803,14 +876,17 @@ export default function AddExerciseScreen({ navigation, route }) {
                 <TextInput
                   value={modalExerciseName}
                   onChangeText={setModalExerciseName}
-                  placeholder="Ej: Press de banca"
+                  placeholder="Ej: Press Arnold"
                   placeholderTextColor={colors.text.secondary}
-                  className="rounded-xl px-4 py-3 text-base"
+                  className="rounded-xl px-4 text-base"
                   style={{ 
                     backgroundColor: colors.background.secondary, 
                     color: colors.text.primary,
                     borderColor: colors.border.light,
-                    borderWidth: 1
+                    borderWidth: 1,
+                    lineHeight: 20,
+                    paddingTop: 14,
+                    paddingBottom: 14
                   }}
                 />
               </View>
@@ -826,14 +902,17 @@ export default function AddExerciseScreen({ navigation, route }) {
                 <TextInput
                   value={modalMuscleGroup}
                   onChangeText={setModalMuscleGroup}
-                  placeholder="Ej: Pecho, Espalda, Piernas..."
+                  placeholder="Ej: Pecho"
                   placeholderTextColor={colors.text.secondary}
-                  className="rounded-xl px-4 py-3 text-base"
+                  className="rounded-xl px-4 text-base"
                   style={{ 
                     backgroundColor: colors.background.secondary, 
                     color: colors.text.primary,
                     borderColor: colors.border.light,
-                    borderWidth: 1
+                    borderWidth: 1,
+                    lineHeight: 20,
+                    paddingTop: 14,
+                    paddingBottom: 14
                   }}
                 />
               </View>
@@ -891,18 +970,33 @@ export default function AddExerciseScreen({ navigation, route }) {
                   onChangeText={setModalEquipmentText}
                   placeholder="Ej: Barra olímpica 20kg, Mancuernas ajustables..."
                   placeholderTextColor={colors.text.secondary}
-                  className="rounded-xl px-4 py-3 text-base"
+                  className="rounded-xl px-4 text-base"
                   style={{ 
                     backgroundColor: colors.background.secondary, 
                     color: colors.text.primary,
                     borderColor: colors.border.light,
-                    borderWidth: 1
+                    borderWidth: 1,
+                    lineHeight: 20,
+                    paddingTop: 14,
+                    paddingBottom: 14
                   }}
                 />
               </View>
 
               {/* Notas */}
-              <View className="mb-4">
+              <View 
+                className="mb-4"
+                onLayout={(event) => {
+                  const layout = event.nativeEvent.layout;
+                  // Guardar la posición del View de Notas
+                  if (!modalScrollViewRef.current?.notesPosition) {
+                    modalScrollViewRef.current = {
+                      ...modalScrollViewRef.current,
+                      notesPosition: layout.y
+                    };
+                  }
+                }}
+              >
                 <Text 
                   className="text-sm mb-2 font-medium"
                   style={{ color: colors.text.secondary }}
@@ -917,12 +1011,24 @@ export default function AddExerciseScreen({ navigation, route }) {
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"
-                  className="rounded-xl px-4 py-3 text-base h-24"
+                  onFocus={() => {
+                    setTimeout(() => {
+                      const yOffset = modalScrollViewRef.current?.notesPosition || 0;
+                      modalScrollViewRef.current?.scrollTo({ 
+                        y: yOffset - 50, 
+                        animated: true 
+                      });
+                    }, 300);
+                  }}
+                  className="rounded-xl px-4 text-base h-24"
                   style={{ 
                     backgroundColor: colors.background.secondary, 
                     color: colors.text.primary,
                     borderColor: colors.border.light,
-                    borderWidth: 1
+                    borderWidth: 1,
+                    lineHeight: 22,
+                    paddingTop: 12,
+                    paddingBottom: 12
                   }}
                 />
               </View>
@@ -944,9 +1050,11 @@ export default function AddExerciseScreen({ navigation, route }) {
                 </Text>
               </TouchableOpacity>
             </ScrollView>
+            </KeyboardAvoidingView>
           </View>
         </View>
       </Modal>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

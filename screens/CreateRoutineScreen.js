@@ -175,7 +175,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
               placeholder="Ej: Rutina de Fuerza"
               placeholderTextColor={colors.text.secondary}
               className={inputStyles.base.input}
-              style={{ color: colors.text.primary, backgroundColor: colors.background.secondary, borderColor: colors.border.light }}
+              style={{ color: colors.text.primary, backgroundColor: colors.background.secondary, borderColor: colors.border.light, lineHeight: 20, paddingTop: 14, paddingBottom: 14 }}
             />
           </View>
 
@@ -190,7 +190,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
               numberOfLines={4}
               textAlignVertical="top"
               className={inputStyles.textarea.input}
-              style={{ color: colors.text.primary, backgroundColor: colors.background.secondary, borderColor: colors.border.light }}
+              style={{ color: colors.text.primary, backgroundColor: colors.background.secondary, borderColor: colors.border.light, lineHeight: 22, paddingTop: 12, paddingBottom: 12 }}
             />
           </View>
 

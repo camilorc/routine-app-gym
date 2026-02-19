@@ -34,11 +34,14 @@ export const AuthInput = ({
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           autoCorrect={autoCorrect}
-          className="rounded-xl px-4 py-4 text-base border"
+          className="rounded-xl px-4 text-base border"
           style={{ 
             backgroundColor: colors.background.secondary, 
             color: colors.text.primary,
-            borderColor: colors.border.light
+            borderColor: colors.border.light,
+            lineHeight: 20,
+            paddingTop: 14,
+            paddingBottom: 14
           }}
         />
         {secureTextEntry && (

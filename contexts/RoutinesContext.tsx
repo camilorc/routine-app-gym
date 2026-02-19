@@ -137,7 +137,19 @@ export function RoutinesProvider({ children }: RoutinesProviderProps) {
 
     setError(null);
     try {
-      const newRoutine = await RoutineService.createRoutine(draft, user.id);
+      const newRoutine = await RoutineService.createRoutine(draft, user.id) as any;
+      
+      // Agregar ejercicios personalizados al maestro si se crearon
+      if (newRoutine._createdCustomExercises && newRoutine._createdCustomExercises.length > 0) {
+        console.log('📚 [CONTEXT] Agregando', newRoutine._createdCustomExercises.length, 'ejercicios personalizados al maestro');
+        newRoutine._createdCustomExercises.forEach((exercise: Exercise) => {
+          addExerciseToMaster(exercise);
+        });
+      }
+      
+      // Eliminar campo temporal antes de guardar en estado
+      delete newRoutine._createdCustomExercises;
+      
       setRoutines(prev => [...prev, newRoutine]);
       await clearDraftRoutine();
     } catch (error) {
@@ -154,7 +166,19 @@ export function RoutinesProvider({ children }: RoutinesProviderProps) {
 
     setError(null);
     try {
-      const updatedRoutine = await RoutineService.updateRoutine(id, draft);
+      const updatedRoutine = await RoutineService.updateRoutine(id, draft) as any;
+      
+      // Agregar ejercicios personalizados al maestro si se crearon
+      if (updatedRoutine._createdCustomExercises && updatedRoutine._createdCustomExercises.length > 0) {
+        console.log('📚 [CONTEXT] Agregando', updatedRoutine._createdCustomExercises.length, 'ejercicios personalizados al maestro');
+        updatedRoutine._createdCustomExercises.forEach((exercise: Exercise) => {
+          addExerciseToMaster(exercise);
+        });
+      }
+      
+      // Eliminar campo temporal antes de guardar en estado
+      delete updatedRoutine._createdCustomExercises;
+      
       setRoutines(prev => prev.map(r => r.id === id ? updatedRoutine : r));
       await clearDraftRoutine();
     } catch (error) {
@@ -243,6 +267,23 @@ export function RoutinesProvider({ children }: RoutinesProviderProps) {
     }
   };
 
+  // Agregar ejercicio al maestro local (para ejercicios personalizados)
+  const addExerciseToMaster = (exercise: Exercise): void => {
+    console.log('📚 [CONTEXT] Agregando ejercicio personalizado al maestro:', exercise.name);
+    setExercises(prev => {
+      // Verificar que no exista ya
+      const exists = prev.some(ex => ex.id === exercise.id);
+      if (exists) {
+        console.log('📚 [CONTEXT] Ejercicio ya existe en el maestro');
+        return prev;
+      }
+      // Agregar y ordenar alfabéticamente
+      const updated = [...prev, exercise].sort((a, b) => a.name.localeCompare(b.name));
+      console.log('📚 [CONTEXT] Maestro actualizado. Total ejercicios:', updated.length);
+      return updated;
+    });
+  };
+
   return (
     <RoutinesContext.Provider value={{ 
       routines,
@@ -259,6 +300,7 @@ export function RoutinesProvider({ children }: RoutinesProviderProps) {
       loadRoutineForEditing,
       clearAllData,
       draftToRoutine,
+      addExerciseToMaster,
       isLoadingRoutines,
       isLoadingExercises,
       error,

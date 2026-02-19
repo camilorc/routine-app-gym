@@ -5,7 +5,38 @@
 -- Ejecutar en el SQL Editor de Supabase Dashboard
 
 -- =====================================================
--- 1. TABLA: exercises
+-- 1. TABLA: muscle_groups
+-- =====================================================
+CREATE TABLE IF NOT EXISTS public.muscle_groups (
+  id VARCHAR(50) PRIMARY KEY,
+  display_name TEXT NOT NULL,
+  description TEXT,
+  category TEXT,  -- 'upper', 'lower', 'core', 'other'
+  sort_order INTEGER NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Insertar grupos musculares iniciales
+INSERT INTO public.muscle_groups (id, display_name, category, sort_order) VALUES
+  ('piernas', 'Piernas', 'lower', 1),
+  ('gluteos', 'Glúteos', 'lower', 2),
+  ('espalda', 'Espalda', 'upper', 3),
+  ('pecho', 'Pecho', 'upper', 4),
+  ('hombros', 'Hombros', 'upper', 5),
+  ('biceps', 'Bíceps', 'upper', 6),
+  ('triceps', 'Tríceps', 'upper', 7),
+  ('core', 'Core', 'core', 8),
+  ('pantorrillas', 'Pantorrillas', 'lower', 9),
+  ('antebrazos', 'Antebrazos', 'upper', 10),
+  ('cuello', 'Cuello', 'upper', 11),
+  ('otro', 'Otro', 'other', 12)
+ON CONFLICT (id) DO NOTHING;
+
+-- Índice para categorías
+CREATE INDEX IF NOT EXISTS idx_muscle_groups_category ON public.muscle_groups(category);
+
+-- =====================================================
+-- 2. TABLA: exercises
 -- =====================================================
 CREATE TABLE IF NOT EXISTS public.exercises (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -25,14 +56,10 @@ CREATE TABLE IF NOT EXISTS public.exercises (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   
-  CONSTRAINT valid_muscle_group CHECK (muscle_group IN (
-    'pecho', 'espalda', 'hombros', 'biceps', 'triceps', 
-    'antebrazos', 'cuadriceps', 'isquiotibiales', 'gluteos', 
-    'gemelos', 'abdominales', 'core', 'cardio', 'fullbody'
-  )),
   -- equipment es texto libre sin validación para mayor flexibilidad
   CONSTRAINT valid_difficulty CHECK (difficulty IN ('beginner', 'intermediate', 'advanced')),
-  CONSTRAINT user_exercises_must_have_creator CHECK (is_global = true OR created_by IS NOT NULL)
+  CONSTRAINT user_exercises_must_have_creator CHECK (is_global = true OR created_by IS NOT NULL),
+  CONSTRAINT fk_muscle_group FOREIGN KEY (muscle_group) REFERENCES public.muscle_groups(id) ON DELETE RESTRICT
 );
 
 -- Índices para exercises
@@ -158,11 +185,21 @@ CREATE INDEX idx_routine_assignments_routine_id ON public.routine_assignments(ro
 -- =====================================================
 
 -- Habilitar RLS en todas las tablas
+ALTER TABLE public.muscle_groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exercises ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.routines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.routine_exercises ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exercise_sets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.routine_assignments ENABLE ROW LEVEL SECURITY;
+
+-- =====================================================
+-- POLÍTICAS RLS: muscle_groups
+-- =====================================================
+
+-- Los grupos musculares son públicos (solo lectura)
+CREATE POLICY "Los grupos musculares son públicos"
+  ON public.muscle_groups FOR SELECT
+  USING (true);
 
 -- =====================================================
 -- POLÍTICAS RLS: exercises
